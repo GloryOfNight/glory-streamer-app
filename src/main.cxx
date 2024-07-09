@@ -1,4 +1,5 @@
 #include "SDL3/SDL.h"
+#include "SDL3/SDL_hints.h"
 #include "SDL3/SDL_opengl.h"
 
 #include "imgui.h"
@@ -17,7 +18,7 @@ int main(int argc, char* argv[], char* envp[])
 	}
 
 	// Enable native IME.
-	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+	SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "1");
 
 	// Create window with SDL_Renderer graphics context
 	uint32_t window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
@@ -27,7 +28,7 @@ int main(int argc, char* argv[], char* envp[])
 		printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
 		return -1;
 	}
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+	SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
 	if (renderer == nullptr)
 	{
 		SDL_Log("Error: SDL_CreateRenderer(): %s\n", SDL_GetError());
@@ -147,7 +148,7 @@ int main(int argc, char* argv[], char* envp[])
 		//SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
 		SDL_SetRenderDrawColor(renderer, (Uint8)(clear_color.x * 255), (Uint8)(clear_color.y * 255), (Uint8)(clear_color.z * 255), (Uint8)(clear_color.w * 255));
 		SDL_RenderClear(renderer);
-		ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 		SDL_RenderPresent(renderer);
 	}
 
