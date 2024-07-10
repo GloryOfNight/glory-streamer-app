@@ -7,9 +7,6 @@
       "installDir": "${sourceDir}/install",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "SDL_SHARED": false,
-        "SDL_STATIC": true,
-        "SDL_TEST_LIBRARY": false,
         "BUILD_CURL_EXE": true,
         "BUILD_SHARED_LIBS": false,
         "BUILD_STATIC_LIBS": true,
