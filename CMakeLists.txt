@@ -14,7 +14,7 @@ add_subdirectory(thirdparty)
 
 add_executable(${PROJECT_NAME} "src/main.cxx")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3-static imgui-static CURL::libcurl)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3-static imgui-static CURL::libcurl httplib nlohmann_json)
 
 enable_sanitizers(${PROJECT_NAME} 
                     ${ENABLE_SANITIZER_ADDRESS} 

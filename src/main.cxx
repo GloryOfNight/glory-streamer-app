@@ -1,165 +1,170 @@
-#include "SDL3/SDL.h"
-#include "SDL3/SDL_hints.h"
-#include "SDL3/SDL_opengl.h"
-
-#include "imgui.h"
-#include "imgui_impl_sdl3.h"
-#include "imgui_impl_sdlrenderer3.h"
-
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_opengl.h>
+#include <codecvt>
+#include <curl/curl.h>
+#include <format>
+#include <httplib.h>
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
 #include <iostream>
+#include <nlohmann/json.hpp>
 
+struct authResponse
+{
+	std::string accessToken{};
+	std::string expiresIn{};
+	std::string refreshToken{};
+	std::string scope{};
+	std::string tokenType{};
+};
+
+static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
+{
+	((std::string*)userp)->append((char*)contents, size * nmemb);
+	return size * nmemb;
+}
+
+std::string exchangeAuthCodeForAccessToken(const std::string& clientId, const std::string& clientSecret, const std::string& authCode, const std::string& redirectUri)
+{
+	CURL* curl;
+	CURLcode res;
+	std::string readBuffer;
+
+	curl = curl_easy_init();
+	if (curl)
+	{
+		std::string tokenUrl = "https://oauth2.googleapis.com/token";
+		std::string postFields = "code=" + authCode + "&client_id=" + clientId + "&client_secret=" + clientSecret + "&redirect_uri=" + redirectUri + "&grant_type=authorization_code";
+
+		curl_easy_setopt(curl, CURLOPT_URL, tokenUrl.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postFields.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+		res = curl_easy_perform(curl);
+		if (res != CURLE_OK)
+		{
+			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+		}
+
+		curl_easy_cleanup(curl);
+	}
+
+	return readBuffer;
+}
+
+authResponse DoOAuth(const std::string& clientId, const std::string& clientSecret)
+{
+	authResponse auth{};
+
+	const std::string redirectUri = "http://localhost:8080/callback";
+
+	std::cout << "========================\n"
+			  << std::endl;
+	const std::string uri = std::format("https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/youtube.readonly&access_type=offline&include_granted_scopes=true&response_type=code&client_id={0}&redirect_uri={1}", clientId, redirectUri);
+	std::cout << uri << std::endl;
+	std::cout << "\n========================" << std::endl;
+	std::cout << "Please follow to link above and process to gAuth" << std::endl;
+	std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
+
+	httplib::Server localServer;
+
+	const auto callbackLam = [&](const httplib::Request& req, httplib::Response& res)
+	{
+		auto authCode = req.get_param_value("code");
+
+		// Exchange the authorization code for an access token
+		std::string tokenResponse = exchangeAuthCodeForAccessToken(clientId, clientSecret, authCode, redirectUri);
+		res.set_content("Authorization successful! You can close this window.", "text/plain");
+
+		localServer.stop();
+
+		const auto jsonAuth = nlohmann::json::parse(tokenResponse);
+
+		auth.accessToken = jsonAuth["access_token"];
+		//auth.expiresIn = jsonAuth["expires_in"];
+		//auth.refreshToken = jsonAuth["refresh_token"];
+		//auth.scope = jsonAuth["scope"];
+		//auth.tokenType = jsonAuth["token_type"];
+	};
+
+	localServer.Get("/callback", callbackLam);
+
+	localServer.listen("localhost", 8080);
+
+	return auth;
+}
+
+std::string fetchRecentSubscribers(const std::string& apiKey, const std::string& accessToken)
+{
+	CURL* curl;
+	CURLcode res;
+	std::string readBuffer;
+
+	curl = curl_easy_init();
+	if (curl)
+	{
+		// Construct the URL
+		std::string url = "https://youtube.googleapis.com/youtube/v3/subscriptions?part=subscriberSnippet&myRecentSubscribers=true&key=" + apiKey;
+
+		// Set the URL
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+		// Set the Authorization header
+		struct curl_slist* headers = NULL;
+		std::string bearerToken = "Authorization: Bearer " + accessToken;
+		headers = curl_slist_append(headers, bearerToken.c_str());
+		headers = curl_slist_append(headers, "Accept: application/json");
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+		// Set the callback function
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+
+		// Set the user pointer to pass to the callback function
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+		// Perform the request
+		res = curl_easy_perform(curl);
+
+		// Check for errors
+		if (res != CURLE_OK)
+		{
+			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+		}
+
+		// Clean up
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl);
+	}
+
+	return readBuffer;
+}
 int main(int argc, char* argv[], char* envp[])
 {
-	// Setup SDL
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0)
+	const std::string clientId = "1002066649738-3gfrfvhfdt9q2j3n7vq1ufkdlav603a9.apps.googleusercontent.com";
+	const std::string clientSecret = "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";
+
+	auto NewAuth = DoOAuth(clientId, clientSecret);
+
+	const std::string recent = fetchRecentSubscribers(clientSecret, NewAuth.accessToken);
+
+	const auto recentJson = nlohmann::json::parse(recent);
+
+	std::vector<std::string> titles;
+	for (const auto& item : recentJson["items"])
 	{
-		printf("Error: SDL_Init(): %s\n", SDL_GetError());
-		return -1;
+		titles.push_back(item["subscriberSnippet"]["title"]);
 	}
 
-	// Enable native IME.
-	SDL_SetHint(SDL_HINT_IME_IMPLEMENTED_UI, "1");
+	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter{};
 
-	// Create window with SDL_Renderer graphics context
-	uint32_t window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
-	SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL3+SDL_Renderer example", 1280, 720, window_flags);
-	if (window == nullptr)
+	for (const auto& title : titles)
 	{
-		printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
-		return -1;
+		const std::wstring wtitle = converter.from_bytes(title.c_str());
+		std::wcout << wtitle << std::endl;
 	}
-	SDL_Renderer* renderer = SDL_CreateRenderer(window, nullptr);
-	if (renderer == nullptr)
-	{
-		SDL_Log("Error: SDL_CreateRenderer(): %s\n", SDL_GetError());
-		return -1;
-	}
-	SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-	SDL_ShowWindow(window);
-
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	(void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsLight();
-
-	// Setup Platform/Renderer backends
-	ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
-	ImGui_ImplSDLRenderer3_Init(renderer);
-
-	// Load Fonts
-	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-	// - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-	// - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
-	// - Read 'docs/FONTS.md' for more instructions and details.
-	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-	// - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-	//io.Fonts->AddFontDefault();
-	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf", 18.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
-	//IM_ASSERT(font != nullptr);
-
-	// Our state
-	bool show_demo_window = true;
-	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	// Main loop
-	bool done = false;
-#ifdef __EMSCRIPTEN__
-	// For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
-	// You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
-	io.IniFilename = nullptr;
-	EMSCRIPTEN_MAINLOOP_BEGIN
-#else
-	while (!done)
-#endif
-	{
-		// Poll and handle events (inputs, window resize, etc.)
-		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
-		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
-		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			ImGui_ImplSDL3_ProcessEvent(&event);
-			if (event.type == SDL_EVENT_QUIT)
-				done = true;
-			if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
-				done = true;
-		}
-
-		// Start the Dear ImGui frame
-		ImGui_ImplSDLRenderer3_NewFrame();
-		ImGui_ImplSDL3_NewFrame();
-		ImGui::NewFrame();
-
-		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-		if (show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
-
-		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-		{
-			static float f = 0.0f;
-			static int counter = 0;
-
-			ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
-
-			ImGui::Text("This is some useful text.");		   // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
-
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);			// Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-			if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-			ImGui::End();
-		}
-
-		// 3. Show another simple window.
-		if (show_another_window)
-		{
-			ImGui::Begin("Another Window", &show_another_window); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
-			ImGui::End();
-		}
-
-		// Rendering
-		ImGui::Render();
-		//SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-		SDL_SetRenderDrawColor(renderer, (Uint8)(clear_color.x * 255), (Uint8)(clear_color.y * 255), (Uint8)(clear_color.z * 255), (Uint8)(clear_color.w * 255));
-		SDL_RenderClear(renderer);
-		ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
-		SDL_RenderPresent(renderer);
-	}
-
-	// Cleanup
-	ImGui_ImplSDLRenderer3_Shutdown();
-	ImGui_ImplSDL3_Shutdown();
-	ImGui::DestroyContext();
-
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
 
 	return 0;
 }
