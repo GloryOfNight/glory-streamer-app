@@ -12,9 +12,11 @@ include(cmake/PreventInSourceBuilds.cmake)
 
 add_subdirectory(thirdparty)
 
-add_executable(${PROJECT_NAME} "src/main.cxx")
+add_executable(${PROJECT_NAME} "src/main.cxx" "src/youtube_data_api.cxx")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3-static imgui-static CURL::libcurl httplib nlohmann_json)
+
+target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 enable_sanitizers(${PROJECT_NAME} 
                     ${ENABLE_SANITIZER_ADDRESS} 
