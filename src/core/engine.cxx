@@ -1,9 +1,16 @@
-﻿#include "engine.hxx"
+﻿#include "core/engine.hxx"
 
 #include <SDL2/SDL_image.h>
 #include <SDL_ttf.h>
 #include <iostream>
 #include <thread>
+
+static gl::app::engine* gEngine{nullptr};
+
+gl::app::engine* gl::app::engine::get()
+{
+	return gEngine;
+}
 
 gl::app::engine::engine()
 {
@@ -24,15 +31,17 @@ bool gl::app::engine::init()
 	SDL_SetWindowTitle(mWindow, "Glory streamer app");
 	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
 
+	gEngine = this;
+
 	mTexture = IMG_LoadTexture(mRenderer, "assets/sprites/ghost/first_test_ghost.png");
 
 	TTF_Font* font = TTF_OpenFont("assets/fonts/Buran USSR.ttf", 80);
 
-	SDL_Surface* surf = TTF_RenderUTF8_Blended(font, "русская банька матрешка", SDL_Color{255, 255, 255, 255});
-	mFontTexture = SDL_CreateTextureFromSurface(mRenderer, surf);
+	SDL_Surface* surface = TTF_RenderUTF8_Blended(font, "русская банька матрешка", SDL_Color{255, 255, 255, 255});
+	mFontTexture = SDL_CreateTextureFromSurface(mRenderer, surface);
 
 	//Clean up the surface and font
-	SDL_FreeSurface(surf);
+	SDL_FreeSurface(surface);
 	TTF_CloseFont(font);
 
 	return true;
@@ -52,30 +61,17 @@ void gl::app::engine::run()
 		const double delta = std::chrono::duration<double>(now - mLastFrameTime).count();
 		mLastFrameTime = now;
 
+		for (auto& object : mObjects)
+		{
+			object->update(delta);
+		}
+
 		SDL_RenderClear(mRenderer);
 
-		SDL_Rect src;
-		src.h = 512;
-		src.w = 512;
-		src.x = 0;
-		src.y = 0;
-
-		SDL_Rect dst = src;
-		//dst.h = 512;
-		//dst.w = 512;
-		//dst.x = dst.x + 100 * delta;
-		//dst.y = dst.y + 100 * delta;
-
-		SDL_RenderCopy(mRenderer, mTexture, &src, &dst);
-
-		src.h = 128;
-		src.w = 512;
-		src.x = 0;
-		src.y = 0;
-
-		dst = src;
-
-		SDL_RenderCopy(mRenderer, mFontTexture, &src, &dst);
+		for (auto& object : mObjects)
+		{
+			object->draw(mRenderer);
+		}
 
 		SDL_RenderPresent(mRenderer);
 
@@ -90,8 +86,57 @@ void gl::app::engine::stop()
 
 void gl::app::engine::shutdown()
 {
+	mObjects.clear();
+
+	for (auto& [name, font] : mFonts)
+	{
+		TTF_CloseFont(font);
+	}
+
+	for (auto& [name, texture] : mTextures)
+	{
+		SDL_DestroyTexture(texture);
+	}
+
 	SDL_DestroyRenderer(mRenderer);
 	SDL_DestroyWindow(mWindow);
+
+	gEngine = nullptr;
+}
+
+TTF_Font* gl::app::engine::LoadFont(const std::string& fontPath, int32_t fontSize)
+{
+	const std::string fontStoreName = std::format("{0}|{1}", fontPath, fontSize);
+
+	if (mFonts.contains(fontStoreName))
+	{
+		return mFonts.at(fontStoreName);
+	}
+
+	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), fontSize);
+
+	if (font)
+	{
+		mFonts.emplace(fontStoreName, font);
+	}
+
+	return font;
+}
+
+SDL_Texture* gl::app::engine::LoadTexture(const std::string& texturePath)
+{
+	if (mTextures.contains(texturePath))
+	{
+		return mTextures.at(texturePath);
+	}
+
+	SDL_Texture* texture = IMG_LoadTexture(mRenderer, "assets/sprites/ghost/first_test_ghost.png");
+	if (texture)
+	{
+		mTextures.emplace(texturePath, texture);
+	}
+
+	return texture;
 }
 
 void gl::app::engine::pollEvents()

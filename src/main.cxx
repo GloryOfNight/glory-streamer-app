@@ -1,7 +1,8 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine.hxx"
-#include "youtube_data_api.hxx"
+#include "api/youtube_api.hxx"
+#include "core/engine.hxx"
+#include "objects/subscriber_ghost.hxx"
 
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
@@ -30,10 +31,6 @@ int main(int argc, char* argv[], char* envp[])
 		return -1;
 	}
 
-	eng.run();
-
-	eng.shutdown();
-
 	const std::string clientId = "1002066649738-3gfrfvhfdt9q2j3n7vq1ufkdlav603a9.apps.googleusercontent.com";
 	const std::string clientSecret = "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";
 
@@ -49,11 +46,17 @@ int main(int argc, char* argv[], char* envp[])
 
 	const auto recentJson = nlohmann::json::parse(recent);
 
-	std::vector<std::string> titles;
 	for (const auto& item : recentJson["items"])
 	{
-		titles.push_back(item["subscriberSnippet"]["title"]);
+		const std::string title = item["subscriberSnippet"]["title"];
+		const std::string id = item["subscriberSnippet"]["channelId"];
+
+		auto subGhost = eng.createObject<gl::app::subsubscriber_ghost>(title, id);
 	}
+
+	eng.run();
+
+	eng.shutdown();
 
 	TTF_Quit();
 	SDL_Quit();
