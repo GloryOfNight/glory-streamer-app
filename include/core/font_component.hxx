@@ -15,12 +15,12 @@ namespace gl::app
 
 		void setText(const std::string& text);
 
-		void setSrcOffset(int32_t x, int32_t y);
+		void setDstOffset(int32_t x, int32_t y);
 
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		const SDL_Rect& getSrcRect() const { return mSrcRect; }
+		const SDL_Rect& getDstRect() const { return mDstRect; }
 
 	private:
 		TTF_Font* mFont{};
@@ -28,7 +28,7 @@ namespace gl::app
 		SDL_Texture* mTexture{}; // owning!
 
 		std::string mText{};
-		SDL_Rect mSrcRect{};
+		SDL_Rect mDstRect{};
 
 		bool bDirty{true};
 	};
