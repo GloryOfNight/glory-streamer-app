@@ -36,16 +36,14 @@ namespace gl::app
 			return obj;
 		}
 
+		void getWindowSize(int32_t* width, int32_t* height);
+
 	private:
 		void pollEvents();
 
 		SDL_Window* mWindow{};
 
 		SDL_Renderer* mRenderer{};
-
-		SDL_Texture* mTexture{};
-
-		SDL_Texture* mFontTexture{};
 
 		std::chrono::time_point<std::chrono::high_resolution_clock> mLastFrameTime{};
 

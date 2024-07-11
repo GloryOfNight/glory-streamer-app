@@ -22,7 +22,7 @@ gl::app::engine::~engine()
 
 bool gl::app::engine::init()
 {
-	if (SDL_CreateWindowAndRenderer(1920, 1080, 0, &mWindow, &mRenderer))
+	if (SDL_CreateWindowAndRenderer(2000, 330, 0, &mWindow, &mRenderer))
 	{
 		std::cerr << "SDL_CreateWindowAndRenderer failed with: " << SDL_GetError() << std::endl;
 		return false;
@@ -32,17 +32,6 @@ bool gl::app::engine::init()
 	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
 
 	gEngine = this;
-
-	mTexture = IMG_LoadTexture(mRenderer, "assets/sprites/ghost/first_test_ghost.png");
-
-	TTF_Font* font = TTF_OpenFont("assets/fonts/Buran USSR.ttf", 80);
-
-	SDL_Surface* surface = TTF_RenderUTF8_Blended(font, "русская банька матрешка", SDL_Color{255, 255, 255, 255});
-	mFontTexture = SDL_CreateTextureFromSurface(mRenderer, surface);
-
-	//Clean up the surface and font
-	SDL_FreeSurface(surface);
-	TTF_CloseFont(font);
 
 	return true;
 }
@@ -66,6 +55,7 @@ void gl::app::engine::run()
 			object->update(delta);
 		}
 
+		SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 0);
 		SDL_RenderClear(mRenderer);
 
 		for (auto& object : mObjects)
@@ -137,6 +127,11 @@ SDL_Texture* gl::app::engine::LoadTexture(const std::string& texturePath)
 	}
 
 	return texture;
+}
+
+void gl::app::engine::getWindowSize(int32_t* width, int32_t* height)
+{
+	SDL_GetWindowSize(mWindow, width, height);
 }
 
 void gl::app::engine::pollEvents()

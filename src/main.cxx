@@ -24,13 +24,6 @@ int main(int argc, char* argv[], char* envp[])
 		return -1;
 	}
 
-	gl::app::engine eng{};
-	if (!eng.init())
-	{
-		std::cerr << "Failed to initialize engine" << std::endl;
-		return -1;
-	}
-
 	const std::string clientId = "1002066649738-3gfrfvhfdt9q2j3n7vq1ufkdlav603a9.apps.googleusercontent.com";
 	const std::string clientSecret = "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";
 
@@ -45,6 +38,14 @@ int main(int argc, char* argv[], char* envp[])
 	const std::string recent = yt::data::api::fetchSubscribers(clientSecret, authInfo.accessToken, false, 50);
 
 	const auto recentJson = nlohmann::json::parse(recent);
+
+	gl::app::engine eng{};
+
+	if (!eng.init())
+	{
+		std::cerr << "Failed to initialize engine" << std::endl;
+		return -1;
+	}
 
 	for (const auto& item : recentJson["items"])
 	{
