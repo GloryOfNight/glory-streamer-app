@@ -10,15 +10,11 @@ include(cmake/ProjectOptions.cmake)
 include(cmake/Sanitizers.cmake)
 include(cmake/PreventInSourceBuilds.cmake)
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-
 add_subdirectory(thirdparty)
 
 add_executable(${PROJECT_NAME} "src/main.cxx" "src/api/youtube_data_api.cxx" "src/core/engine.cxx" "src/core/sprite_component.cxx" "src/core/font_component.cxx" "src/objects/subscriber_ghost.cxx")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf imgui-static CURL::libcurl httplib nlohmann_json)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL2-static SDL2_image SDL2_ttf imgui-static CURL::libcurl httplib nlohmann_json)
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 

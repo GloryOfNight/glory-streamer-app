@@ -29,7 +29,7 @@ void gl::app::font_component::update(double delta)
 
 void gl::app::font_component::draw(SDL_Renderer* renderer)
 {
-	if (mText.empty())
+	if (mFont == nullptr || mText.empty())
 		return;
 
 	if (bDirty)

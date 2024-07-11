@@ -7,7 +7,11 @@
       "installDir": "${sourceDir}/install",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "BUILD_CURL_EXE": true,
+        "SDL_SHARED": false,
+        "SDL_STATIC": true,
+        "SDL_TEST": false,
+        "SDL2TTF_VENDORED": true,
+        "BUILD_CURL_EXE": false,
         "BUILD_SHARED_LIBS": false,
         "BUILD_STATIC_LIBS": true,
         "BUILD_STATIC_CURL": true
@@ -61,7 +65,9 @@
       },
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "USE_SCHANNEL": true,
+        "USE_WINDOWS_SSPI": true
       }
     },
     {

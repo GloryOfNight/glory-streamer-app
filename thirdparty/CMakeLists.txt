@@ -1,7 +1,8 @@
-set(USE_SCHANNEL ON)
-set(USE_WINDOWS_SSPI ON)
-add_subdirectory(curl)
+add_subdirectory(SDL)
+add_subdirectory(SDL_image)
+add_subdirectory(SDL_ttf)
 
+add_subdirectory(curl)
 add_subdirectory(cpp-httplib)
 add_subdirectory(nlohmann_json)
 
