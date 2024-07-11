@@ -36,7 +36,14 @@ int main(int argc, char* argv[], char* envp[])
 		return -1;
 	}
 
-	const std::string liveBroadcasts = yt::api::listLiveBroadcasts(clientSecret, authInfo.accessToken, 50);
+	const auto req = yt::api::live::listLiveBroadcastsRequest(clientSecret)
+						 .setParts({"snippet", "status"})
+						 .setBroadcastStatus("completed")
+						 .setBroadcastType("event")
+						 .setMaxResults(1);
+
+	const std::string liveBroadcasts = yt::api::fetch(req.url, authInfo.accessToken);
+
 	const auto liveBroadcastsJson = nlohmann::json::parse(liveBroadcasts);
 	for (const auto& item : liveBroadcastsJson["items"])
 	{
