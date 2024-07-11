@@ -40,7 +40,7 @@ std::string exchangeAuthCodeForAccessToken(const std::string& clientId, const st
 	return readBuffer;
 }
 
-std::pair<bool, yt::data::api::auth_info> yt::data::api::beginAuth(const std::string& clientId, const std::string& clientSecret)
+std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string& clientId, const std::string& clientSecret)
 {
 	bool bSuccess = false;
 	auth_info auth{};
@@ -91,7 +91,85 @@ std::pair<bool, yt::data::api::auth_info> yt::data::api::beginAuth(const std::st
 	return std::pair<bool, auth_info>{bSuccess, auth};
 }
 
-std::string yt::data::api::fetchSubscribers(const std::string& apiKey, const std::string& accessToken, bool bRecent, uint8_t maxResults)
+std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string& clientId, const std::string& clientSecret, const std::string& refreshToken)
+{
+	CURL* curl;
+	CURLcode res;
+
+	bool bSuccess = false;
+	auth_info auth{};
+
+	curl = curl_easy_init();
+	if (curl)
+	{
+		std::string url = std::format("https://oauth2.googleapis.com/token?client_id={0}&client_secret={1}&refresh_token{2}&grant_type=refresh_token", clientId, clientSecret, refreshToken);
+
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+		struct curl_slist* headers = NULL;
+		headers = curl_slist_append(headers, "Accept: application/x-www-form-urlencoded");
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+
+		std::string readBuffer;
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+		res = curl_easy_perform(curl);
+
+		if (res != CURLE_OK)
+		{
+			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+		}
+		else if (!readBuffer.empty())
+		{
+			const auto jsonAuth = nlohmann::json::parse(readBuffer);
+
+			auth.accessToken = jsonAuth["access_token"];
+			auth.expiresIn = jsonAuth["expires_in"];
+			auth.refreshToken = jsonAuth["refresh_token"];
+			auth.scope = jsonAuth["scope"];
+			auth.tokenType = jsonAuth["token_type"];
+
+			bSuccess = true;
+		}
+
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl);
+	}
+
+	return std::pair<bool, auth_info>{bSuccess, auth};
+}
+
+std::string yt::api::listLiveBroadcasts(const std::string& clientSecret, const std::string& accessToken, uint8_t maxResults)
+{
+	const std::string url = std::format("https://youtube.googleapis.com/youtube/v3/liveBroadcasts?part=snippet%2CcontentDetails%2Cstatus&broadcastStatus=all&broadcastType=all&maxResults={0}&key={1}", maxResults, clientSecret);
+	const std::string result = fetch(url, accessToken);
+	return result;
+}
+
+std::string yt::api::listLiveChat(const std::string& clientSecret, const std::string& accessToken, const std::string& liveChatId, uint16_t maxResults)
+{
+	const std::string url = std::format("https://youtube.googleapis.com/youtube/v3/liveChat/messages?liveChatId={0}&part=snippet%2CauthorDetails&maxResults={1}&key={2}", liveChatId, maxResults, clientSecret);
+	const std::string result = fetch(url, accessToken);
+	return result;
+}
+
+std::string yt::api::listSubscribers(const std::string& clientSecret, const std::string& accessToken, uint8_t maxResults)
+{
+	const std::string url = std::format("https://youtube.googleapis.com/youtube/v3/subscriptions?part=subscriberSnippet&mySubscribers=true&maxResults={0}&key={1}", maxResults, clientSecret);
+	const std::string result = fetch(url, accessToken);
+	return result;
+}
+
+std::string yt::api::listRecentSubscribers(const std::string& clientSecret, const std::string& accessToken, uint8_t maxResults)
+{
+	const std::string url = std::format("https://youtube.googleapis.com/youtube/v3/subscriptions?part=subscriberSnippet&myRecentSubscribers=true&maxResults={0}&key={1}", maxResults, clientSecret);
+	const std::string result = fetch(url, accessToken);
+	return result;
+}
+
+std::string yt::api::fetch(const std::string& url, const std::string& accessToken)
 {
 	CURL* curl;
 	CURLcode res;
@@ -100,17 +178,12 @@ std::string yt::data::api::fetchSubscribers(const std::string& apiKey, const std
 	curl = curl_easy_init();
 	if (curl)
 	{
-		std::string subFilter = bRecent ? "myRecentSubscribers=true" : "mySubscribers=true";
-
-		std::string url = std::format("https://youtube.googleapis.com/youtube/v3/subscriptions?part=subscriberSnippet&{0}&maxResults={1}&key={2}", subFilter, maxResults, apiKey);
-
 		// Set the URL
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
 		// Set the Authorization header
 		struct curl_slist* headers = NULL;
-		std::string bearerToken = "Authorization: Bearer " + accessToken;
-		headers = curl_slist_append(headers, bearerToken.c_str());
+		headers = curl_slist_append(headers, std::string("Authorization: Bearer " + accessToken).c_str());
 		headers = curl_slist_append(headers, "Accept: application/json");
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 

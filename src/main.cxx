@@ -8,6 +8,7 @@
 #include <SDL_ttf.h>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <thread>
 
 int main(int argc, char* argv[], char* envp[])
 {
@@ -27,7 +28,7 @@ int main(int argc, char* argv[], char* envp[])
 	const std::string clientId = "1002066649738-3gfrfvhfdt9q2j3n7vq1ufkdlav603a9.apps.googleusercontent.com";
 	const std::string clientSecret = "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";
 
-	auto [bAuth, authInfo] = yt::data::api::beginAuth(clientId, clientSecret);
+	auto [bAuth, authInfo] = yt::api::initalAuth(clientId, clientSecret);
 
 	if (!bAuth)
 	{
@@ -35,7 +36,15 @@ int main(int argc, char* argv[], char* envp[])
 		return -1;
 	}
 
-	const std::string recent = yt::data::api::fetchSubscribers(clientSecret, authInfo.accessToken, false, 50);
+	const std::string liveBroadcasts = yt::api::listLiveBroadcasts(clientSecret, authInfo.accessToken, 50);
+	const auto liveBroadcastsJson = nlohmann::json::parse(liveBroadcasts);
+	for (const auto& item : liveBroadcastsJson["items"])
+	{
+		const std::string liveChatId = item["snippet"]["liveChatId"];
+		const std::string qq = yt::api::listLiveChat(clientSecret, authInfo.accessToken, "KicKGFVDc052Z291N3NqckFENlRycHFqUTBTQRILRDNhY0VoMDl4bUU", 200);
+	}
+
+	const std::string recent = yt::api::listSubscribers(clientSecret, authInfo.accessToken, 50);
 
 	const auto recentJson = nlohmann::json::parse(recent);
 

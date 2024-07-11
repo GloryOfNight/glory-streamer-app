@@ -9,6 +9,10 @@ gl::app::font_component::font_component(const std::string& fontPath, int32_t siz
 
 gl::app::font_component::~font_component()
 {
+	if (mTexture)
+	{
+		SDL_DestroyTexture(mTexture);
+	}
 }
 
 void gl::app::font_component::setText(const std::string& text)

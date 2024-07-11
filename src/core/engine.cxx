@@ -22,7 +22,7 @@ gl::app::engine::~engine()
 
 bool gl::app::engine::init()
 {
-	if (SDL_CreateWindowAndRenderer(2000, 330, 0, &mWindow, &mRenderer))
+	if (SDL_CreateWindowAndRenderer(1920, 1080, 0, &mWindow, &mRenderer))
 	{
 		std::cerr << "SDL_CreateWindowAndRenderer failed with: " << SDL_GetError() << std::endl;
 		return false;
