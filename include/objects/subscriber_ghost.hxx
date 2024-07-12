@@ -23,7 +23,7 @@ namespace gl::app
 		std::string mSubTitle;
 		std::string mSubId;
 
-		int32_t mX{}, mY{};		  // current screen pos
+		double mX{}, mY{};		  // current screen pos
 		int32_t mDstX{}, mDstY{}; // dest screen pos
 	};
 } // namespace gl::app

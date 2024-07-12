@@ -40,7 +40,7 @@ std::string exchangeAuthCodeForAccessToken(const std::string& clientId, const st
 	return readBuffer;
 }
 
-std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string& clientId, const std::string& clientSecret)
+std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string clientId, const std::string clientSecret)
 {
 	bool bSuccess = false;
 	auth_info auth{};
@@ -91,7 +91,7 @@ std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string& clien
 	return std::pair<bool, auth_info>{bSuccess, auth};
 }
 
-std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string& clientId, const std::string& clientSecret, const std::string& refreshToken)
+std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string clientId, const std::string clientSecret, const std::string refreshToken)
 {
 	CURL* curl;
 	CURLcode res;
@@ -107,7 +107,7 @@ std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string& clie
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
 		struct curl_slist* headers = NULL;
-		headers = curl_slist_append(headers, "Accept: application/x-www-form-urlencoded");
+		headers = curl_slist_append(headers, "Accept: application/json");
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -141,35 +141,7 @@ std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string& clie
 	return std::pair<bool, auth_info>{bSuccess, auth};
 }
 
-std::string yt::api::listLiveBroadcasts(const std::string& clientSecret, const std::string& accessToken, uint8_t maxResults)
-{
-	const std::string url = std::format("https://youtube.googleapis.com/youtube/v3/liveBroadcasts?part=snippet%2CcontentDetails%2Cstatus&broadcastStatus=all&broadcastType=all&maxResults={0}&key={1}", maxResults, clientSecret);
-	const std::string result = fetch(url, accessToken);
-	return result;
-}
-
-std::string yt::api::listLiveChat(const std::string& clientSecret, const std::string& accessToken, const std::string& liveChatId, uint16_t maxResults)
-{
-	const std::string url = std::format("https://youtube.googleapis.com/youtube/v3/liveChat/messages?liveChatId={0}&part=snippet%2CauthorDetails&maxResults={1}&key={2}", liveChatId, maxResults, clientSecret);
-	const std::string result = fetch(url, accessToken);
-	return result;
-}
-
-std::string yt::api::listSubscribers(const std::string& clientSecret, const std::string& accessToken, uint8_t maxResults)
-{
-	const std::string url = std::format("https://youtube.googleapis.com/youtube/v3/subscriptions?part=subscriberSnippet&mySubscribers=true&maxResults={0}&key={1}", maxResults, clientSecret);
-	const std::string result = fetch(url, accessToken);
-	return result;
-}
-
-std::string yt::api::listRecentSubscribers(const std::string& clientSecret, const std::string& accessToken, uint8_t maxResults)
-{
-	const std::string url = std::format("https://youtube.googleapis.com/youtube/v3/subscriptions?part=subscriberSnippet&myRecentSubscribers=true&maxResults={0}&key={1}", maxResults, clientSecret);
-	const std::string result = fetch(url, accessToken);
-	return result;
-}
-
-std::string yt::api::fetch(const std::string& url, const std::string& accessToken)
+std::string yt::api::fetch(const std::string url, const std::string accessToken)
 {
 	CURL* curl;
 	CURLcode res;

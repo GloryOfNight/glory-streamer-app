@@ -1,12 +1,13 @@
 #pragma once
 
 #include "core/object.hxx"
+#include "core/timer_manager.hxx"
 
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
-#include <chrono>
 #include <map>
 #include <memory>
+#include <string>
 
 namespace gl::app
 {
@@ -16,7 +17,12 @@ namespace gl::app
 		static engine* get();
 
 		engine();
+		engine(const engine&) = delete;
+		engine(engine&&) = delete;
 		~engine();
+
+		engine& operator=(const engine&) = delete;
+		engine& operator=(engine&&) = delete;
 
 		bool init();
 		void run();
@@ -33,10 +39,17 @@ namespace gl::app
 		{
 			T* obj = new T(args...);
 			mObjects.push_back(std::unique_ptr<object>(obj));
+
+			obj->init();
+
 			return obj;
 		}
 
 		void getWindowSize(int32_t* width, int32_t* height);
+
+		const std::vector<std::unique_ptr<object>>& getObjects() const { return mObjects; }
+
+		timer_manager* getTimerManager() const { return mTimerManager.get(); }
 
 	private:
 		void pollEvents();
@@ -45,13 +58,11 @@ namespace gl::app
 
 		SDL_Renderer* mRenderer{};
 
-		std::chrono::time_point<std::chrono::high_resolution_clock> mLastFrameTime{};
-
-		std::map<std::string, TTF_Font*> mFonts{};
-
 		std::map<std::string, SDL_Texture*> mTextures{};
 
 		std::vector<std::unique_ptr<object>> mObjects{};
+
+		std::unique_ptr<timer_manager> mTimerManager{};
 
 		bool mRunning{};
 	};

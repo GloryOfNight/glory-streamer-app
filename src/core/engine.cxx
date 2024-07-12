@@ -2,6 +2,8 @@
 
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <algorithm>
+#include <format>
 #include <iostream>
 #include <thread>
 
@@ -31,6 +33,8 @@ bool gl::app::engine::init()
 	SDL_SetWindowTitle(mWindow, "Glory streamer app");
 	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
 
+	mTimerManager = std::unique_ptr<timer_manager>(new timer_manager());
+
 	gEngine = this;
 
 	return true;
@@ -40,31 +44,34 @@ void gl::app::engine::run()
 {
 	mRunning = true;
 
-	mLastFrameTime = std::chrono::high_resolution_clock::now();
+	const int32_t frameTimeMs = 1000 / 30;
 
-	const int32_t frameTime = 1000 / 30;
-
-	static uint32_t nextTimeTick = SDL_GetTicks();
+	static uint32_t nowTicks = SDL_GetTicks();
+	static uint32_t nextTick = nowTicks;
+	static uint32_t prevTick = nowTicks;
 
 	while (mRunning)
 	{
 		uint32_t nowTicks = SDL_GetTicks();
-		if (nextTimeTick > nowTicks)
+		if (nextTick > nowTicks)
 		{
-			SDL_Delay(nextTimeTick - nowTicks);
+			SDL_Delay(nextTick - nowTicks);
 		}
 		nowTicks = SDL_GetTicks();
-		nextTimeTick += frameTime;
+		const uint32_t elapsedMs = nowTicks - prevTick;
+
+		prevTick = nowTicks;
+		nextTick += frameTimeMs;
+
+		const double deltaSeconds = elapsedMs / 1000.;
 
 		pollEvents();
 
-		const auto now = std::chrono::high_resolution_clock::now();
-		const double delta = static_cast<double>(frameTime) / 1000.;
-		mLastFrameTime = now;
+		mTimerManager->update(deltaSeconds);
 
 		for (auto& object : mObjects)
 		{
-			object->update(delta);
+			object->update(deltaSeconds);
 		}
 
 		SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
@@ -76,7 +83,6 @@ void gl::app::engine::run()
 		}
 
 		SDL_RenderPresent(mRenderer);
-		//std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int32_t>(16 - (delta * 1000))));
 	}
 }
 
@@ -89,39 +95,17 @@ void gl::app::engine::shutdown()
 {
 	mObjects.clear();
 
-	for (auto& [name, font] : mFonts)
-	{
-		TTF_CloseFont(font);
-	}
-
 	for (auto& [name, texture] : mTextures)
 	{
 		SDL_DestroyTexture(texture);
 	}
 
+	mTimerManager.reset();
+
 	SDL_DestroyRenderer(mRenderer);
 	SDL_DestroyWindow(mWindow);
 
 	gEngine = nullptr;
-}
-
-TTF_Font* gl::app::engine::LoadFont(const std::string& fontPath, int32_t fontSize)
-{
-	const std::string fontStoreName = std::format("{0}|{1}", fontPath, fontSize);
-
-	if (mFonts.contains(fontStoreName))
-	{
-		return mFonts.at(fontStoreName);
-	}
-
-	TTF_Font* font = TTF_OpenFont(fontPath.c_str(), fontSize);
-
-	if (font)
-	{
-		mFonts.emplace(fontStoreName, font);
-	}
-
-	return font;
 }
 
 SDL_Texture* gl::app::engine::LoadTexture(const std::string& texturePath)

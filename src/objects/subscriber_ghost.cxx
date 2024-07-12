@@ -34,11 +34,11 @@ void gl::app::subsubscriber_ghost::init()
 void gl::app::subsubscriber_ghost::update(double delta)
 {
 	const int32_t speed = 60;
-	const int32_t movedPixels = static_cast<int32_t>(speed * delta);
+	const double movedPixels = speed * delta;
 
 	const int32_t destSize = 128;
 
-	int h, w;
+	int32_t h{}, w{};
 	engine::get()->getWindowSize(&h, &w);
 
 	if (mX > mDstX)
