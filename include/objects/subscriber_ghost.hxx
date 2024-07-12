@@ -16,6 +16,11 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
+		const std::string& getChannelId() const
+		{
+			return mSubId;
+		};
+
 	private:
 		sprite_component* mSpriteComponent;
 		font_component* mFontComponent;

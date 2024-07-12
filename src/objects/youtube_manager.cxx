@@ -1,6 +1,7 @@
 #include "objects/youtube_manager.hxx"
 
 #include "core/engine.hxx"
+#include "objects/subscriber_ghost.hxx"
 
 #include <future>
 #include <iostream>
@@ -15,50 +16,6 @@ static const std::string clientSecret = "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";
 void gl::app::youtube_manager::init()
 {
 	mAuthFuture = std::async(yt::api::initalAuth, clientId, clientSecret);
-
-	//auto [bAuth, authInfo] = yt::api::initalAuth(clientId, clientSecret);
-
-	//if (!bAuth)
-	//{
-	//	std::cerr << "Failed to authenticate" << std::endl;
-	//}
-
-	//const auto listLiveBroadcastsRequest = yt::api::live::listLiveBroadcastsRequest(clientSecret)
-	//										   .setParts({"snippet", "status"})
-	//										   .setBroadcastStatus("completed")
-	//										   .setBroadcastType("event")
-	//										   .setMaxResults(1);
-
-	//const std::string liveBroadcastsResponse = yt::api::fetch(listLiveBroadcastsRequest.url, authInfo.accessToken);
-
-	//const auto liveBroadcastsResponseJson = nlohmann::json::parse(liveBroadcastsResponse);
-	//for (const auto& item : liveBroadcastsResponseJson["items"])
-	//{
-	//	const std::string liveChatId = item["snippet"]["liveChatId"];
-
-	//	const auto listLiveMessagesRequest = yt::api::live::listLiveChatMessagesRequest(clientSecret)
-	//											 .setParts({"snippet", "authorDetails"})
-	//											 .setLiveChatId(liveChatId);
-
-	//	const std::string liveMessagesResponse = yt::api::fetch(listLiveMessagesRequest.url, authInfo.accessToken);
-	//}
-
-	//const auto listSubscribersRequest = yt::api::live::listSubscribtionsRequest(clientSecret)
-	//										.setParts({"subscriberSnippet"})
-	//										.setMyRecentSubscribers(true)
-	//										.setMaxResults(50);
-
-	//const std::string listSubscribersResponse = yt::api::fetch(listSubscribersRequest.url, authInfo.accessToken);
-
-	//const auto recentJson = nlohmann::json::parse(listSubscribersResponse);
-
-	//for (const auto& item : recentJson["items"])
-	//{
-	//	const std::string title = item["subscriberSnippet"]["title"];
-	//	const std::string id = item["subscriberSnippet"]["channelId"];
-
-	//	//auto subGhost = eng.createObject<gl::app::subsubscriber_ghost>(title, id);
-	//}
 }
 
 void gl::app::youtube_manager::update(double delta)
@@ -82,13 +39,14 @@ void gl::app::youtube_manager::update(double delta)
 
 			if (mRefreshRecentSubs == timer_handle())
 			{
-				mRefreshRecentSubs = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestSubs, this), true);
-				requestSubs();
+				// do not request for subs to save quota
+				//mRefreshRecentSubs = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestSubs, this), true);
+				//requestSubs();
 			}
 
 			if (mRefreshBroadcasts == timer_handle())
 			{
-				mRefreshBroadcasts = timerManager->addTimer(60.0, std::bind(&youtube_manager::requestBroadcasts, this), true);
+				mRefreshBroadcasts = timerManager->addTimer(180.0, std::bind(&youtube_manager::requestBroadcasts, this), true);
 				requestBroadcasts();
 			}
 
@@ -211,7 +169,7 @@ void gl::app::youtube_manager::processBroadcasts()
 
 					std::cout << "Found new broadcast -" << val.lifeCycleStatus << std::endl;
 				}
-				else 
+				else
 				{
 					iter->lifeCycleStatus = item["status"]["lifeCycleStatus"];
 				}
@@ -235,7 +193,8 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 
 	const auto listLiveMessagesRequest = yt::api::live::listLiveChatMessagesRequest(clientSecret)
 											 .setParts({"snippet", "authorDetails"})
-											 .setLiveChatId(liveBroadcast->liveChatId);
+											 .setLiveChatId(liveBroadcast->liveChatId)
+											 .setMaxResults(200);
 
 	mRefreshLiveChatFuture = std::async(yt::api::fetch, listLiveMessagesRequest.url, auth.accessToken);
 }
@@ -256,13 +215,18 @@ void gl::app::youtube_manager::processLiveChatMessages()
 		{
 			uint32_t pollingMs = liveMessagesResponseJson["pollingIntervalMillis"];
 
-			auto timerManager = engine::get()->getTimerManager();
-			timerManager->clearTimer(mRefreshLiveChat);
-			mRefreshLiveChat = timerManager->addTimer(pollingMs / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
+			// disabled due to striking quota too much
+			//auto timerManager = engine::get()->getTimerManager();
+			//timerManager->clearTimer(mRefreshLiveChat);
+			//mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 
 			for (const auto& item : liveMessagesResponseJson["items"])
 			{
 				const std::string id = item["id"];
+
+				const std::string eventType = item["snippet"]["type"];
+				if (eventType != "textMessageEvent")
+					continue;
 
 				const auto iter = std::find_if(mLiveChat.begin(), mLiveChat.end(), [&id](const live_chat_message& val)
 					{ return val.id == id; });
@@ -278,7 +242,19 @@ void gl::app::youtube_manager::processLiveChatMessages()
 
 					std::cout << val.displayName << ": " << val.displayMessage << std::endl;
 
-					mLiveChat.emplace_back(std::move(val));
+					const auto& liveMessage = mLiveChat.emplace_back(std::move(val));
+
+					// temp: move somewhere else
+					const auto& objects = engine::get()->getObjects();
+					const auto iter = std::find_if(objects.begin(), objects.end(), [&liveMessage](const object* obj)
+						{ 
+							const auto ghost = dynamic_cast<const subsubscriber_ghost*>(obj);
+							return ghost && ghost->getChannelId() == liveMessage.channelId; });
+
+					if (iter == objects.end())
+					{
+						engine::get()->createObject<subsubscriber_ghost>(liveMessage.displayName, liveMessage.channelId);
+					}
 				}
 			}
 		}

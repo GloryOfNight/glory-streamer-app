@@ -69,7 +69,8 @@ void gl::app::engine::run()
 
 		mTimerManager->update(deltaSeconds);
 
-		for (auto& object : mObjects)
+		auto copyObjects = mObjects;
+		for (auto& object : copyObjects)
 		{
 			object->update(deltaSeconds);
 		}
@@ -77,7 +78,7 @@ void gl::app::engine::run()
 		SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(mRenderer);
 
-		for (auto& object : mObjects)
+		for (auto& object : copyObjects)
 		{
 			object->draw(mRenderer);
 		}

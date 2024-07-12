@@ -38,7 +38,7 @@ namespace gl::app
 		T* createObject(Args&&... args)
 		{
 			T* obj = new T(args...);
-			mObjects.push_back(std::unique_ptr<object>(obj));
+			mObjects.push_back(obj);
 
 			obj->init();
 
@@ -47,7 +47,7 @@ namespace gl::app
 
 		void getWindowSize(int32_t* width, int32_t* height);
 
-		const std::vector<std::unique_ptr<object>>& getObjects() const { return mObjects; }
+		const std::vector<object*>& getObjects() const { return mObjects; }
 
 		timer_manager* getTimerManager() const { return mTimerManager.get(); }
 
@@ -60,7 +60,7 @@ namespace gl::app
 
 		std::map<std::string, SDL_Texture*> mTextures{};
 
-		std::vector<std::unique_ptr<object>> mObjects{};
+		std::vector<object*> mObjects{};
 
 		std::unique_ptr<timer_manager> mTimerManager{};
 
