@@ -186,7 +186,7 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 		return;
 
 	const auto liveBroadcast = std::find_if(mBroadcasts.begin(), mBroadcasts.end(), [](const broadcast& val)
-		{ return val.lifeCycleStatus == "active" || val.lifeCycleStatus == "ready"; });
+		{ return val.lifeCycleStatus == "live" || val.lifeCycleStatus == "ready"; });
 
 	if (liveBroadcast == mBroadcasts.end())
 		return;

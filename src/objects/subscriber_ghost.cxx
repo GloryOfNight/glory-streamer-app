@@ -8,7 +8,7 @@ gl::app::subsubscriber_ghost::subsubscriber_ghost(const std::string& subTitle, c
 	, mSubTitle(subTitle)
 	, mSubId(subId)
 {
-	mSpriteComponent = addComponent<sprite_component>("assets/sprites/ghost/ghost.png");
+	mSpriteComponent = addComponent<sprite_component>("assets/sprites/ghost/misachi_ghost.png");
 	mFontComponent = addComponent<font_component>("assets/fonts/Buran USSR.ttf", 16);
 
 	int h, w;
@@ -36,7 +36,7 @@ void gl::app::subsubscriber_ghost::update(double delta)
 	const int32_t speed = 60;
 	const double movedPixels = speed * delta;
 
-	const int32_t destSize = 128;
+	const int32_t destSize = 64;
 
 	int32_t h{}, w{};
 	engine::get()->getWindowSize(&h, &w);
