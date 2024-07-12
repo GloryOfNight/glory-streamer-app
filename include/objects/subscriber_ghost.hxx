@@ -17,12 +17,13 @@ namespace gl::app
 		void draw(SDL_Renderer* renderer) override;
 
 	private:
-		sprite_component mSpriteComponent;
-		font_component mFontComponent;
+		sprite_component* mSpriteComponent;
+		font_component* mFontComponent;
 
 		std::string mSubTitle;
 		std::string mSubId;
 
-		int32_t mX, mY; // screen pos
+		int32_t mX{}, mY{};		  // current screen pos
+		int32_t mDstX{}, mDstY{}; // dest screen pos
 	};
 } // namespace gl::app

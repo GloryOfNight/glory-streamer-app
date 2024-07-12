@@ -12,5 +12,10 @@ namespace gl::app
 
 		virtual void update(double delta) = 0;
 		virtual void draw(SDL_Renderer* renderer) = 0;
+
+		void setOwner(class object* owner) { mOwnerObject = owner; }
+
+	protected:
+		class object* mOwnerObject{};
 	};
 } // namespace gl::app

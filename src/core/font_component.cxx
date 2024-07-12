@@ -43,13 +43,24 @@ void gl::app::font_component::draw(SDL_Renderer* renderer)
 			SDL_DestroyTexture(mTexture);
 		}
 
-		SDL_Surface* surface = TTF_RenderUTF8_Blended(mFont, mText.c_str(), {255, 255, 255});
-		mTexture = SDL_CreateTextureFromSurface(renderer, surface);
+		TTF_SetFontOutline(mFont, mOutlineSize);
+		SDL_Surface* textOutlineSurf = TTF_RenderUTF8_Blended_Wrapped(mFont, mText.c_str(), {0, 0, 0}, mWrapping);
 
-		mDstRect.w = surface->w;
-		mDstRect.h = surface->h;
+		TTF_SetFontOutline(mFont, 0);
+		SDL_Surface* textSurf = TTF_RenderUTF8_Blended_Wrapped(mFont, mText.c_str(), {255, 255, 255}, mWrapping);
 
-		SDL_FreeSurface(surface);
+		SDL_Rect rect = {mOutlineSize, mOutlineSize, textSurf->w, textSurf->h}; 
+
+		SDL_SetSurfaceBlendMode(textSurf, SDL_BLENDMODE_BLEND);
+		SDL_BlitSurface(textSurf, NULL, textOutlineSurf, &rect); 
+
+		mTexture = SDL_CreateTextureFromSurface(renderer, textOutlineSurf);
+
+		mDstRect.w = textSurf->w;
+		mDstRect.h = textSurf->h;
+
+		SDL_FreeSurface(textOutlineSurf);
+		SDL_FreeSurface(textSurf);
 		bDirty = false;
 	}
 

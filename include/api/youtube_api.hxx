@@ -6,11 +6,32 @@
 
 namespace yt::api::live
 {
-	struct listLiveBroadcastsRequest
+	template <typename T>
+	struct baseRequest
+	{
+		T& setParts(const std::vector<std::string>& parts)
+		{
+			const size_t totalParts = parts.size();
+			url.append("&part=");
+			for (size_t i = 0; i < totalParts; ++i)
+			{
+				url.append(parts[i]);
+				if (i + 1 < totalParts)
+				{
+					url.append(",");
+				}
+			}
+			return *static_cast<T*>(this);
+		}
+
+		std::string url;
+	};
+
+	struct listLiveBroadcastsRequest : public baseRequest<listLiveBroadcastsRequest>
 	{
 		listLiveBroadcastsRequest(const std::string& key)
-			: url("https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastStatus=active&key=" + key)
 		{
+			url = std::string("https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastStatus=active&key=") + key;
 		}
 
 		// values: id, snippet, contentDetails, monetizationDetails, and status.
@@ -49,8 +70,6 @@ namespace yt::api::live
 			url.append("&maxResults=" + std::to_string(maxResults));
 			return *this;
 		}
-
-		std::string url;
 	};
 } // namespace yt::api::live
 

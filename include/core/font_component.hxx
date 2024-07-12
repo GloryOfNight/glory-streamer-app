@@ -30,6 +30,10 @@ namespace gl::app
 		std::string mText{};
 		SDL_Rect mDstRect{};
 
+		uint16_t mWrapping{120};
+
+		uint8_t mOutlineSize{1};
+
 		bool bDirty{true};
 	};
 } // namespace gl::app

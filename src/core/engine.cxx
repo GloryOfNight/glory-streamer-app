@@ -42,12 +42,24 @@ void gl::app::engine::run()
 
 	mLastFrameTime = std::chrono::high_resolution_clock::now();
 
+	const int32_t frameTime = 1000 / 30;
+
+	static uint32_t nextTimeTick = SDL_GetTicks();
+
 	while (mRunning)
 	{
+		uint32_t nowTicks = SDL_GetTicks();
+		if (nextTimeTick > nowTicks)
+		{
+			SDL_Delay(nextTimeTick - nowTicks);
+		}
+		nowTicks = SDL_GetTicks();
+		nextTimeTick += frameTime;
+
 		pollEvents();
 
 		const auto now = std::chrono::high_resolution_clock::now();
-		const double delta = std::chrono::duration<double>(now - mLastFrameTime).count();
+		const double delta = static_cast<double>(frameTime) / 1000.;
 		mLastFrameTime = now;
 
 		for (auto& object : mObjects)
@@ -55,7 +67,7 @@ void gl::app::engine::run()
 			object->update(delta);
 		}
 
-		SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 0);
+		SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(mRenderer);
 
 		for (auto& object : mObjects)
@@ -64,8 +76,7 @@ void gl::app::engine::run()
 		}
 
 		SDL_RenderPresent(mRenderer);
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(41));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int32_t>(16 - (delta * 1000))));
 	}
 }
 
@@ -120,7 +131,7 @@ SDL_Texture* gl::app::engine::LoadTexture(const std::string& texturePath)
 		return mTextures.at(texturePath);
 	}
 
-	SDL_Texture* texture = IMG_LoadTexture(mRenderer, "assets/sprites/ghost/first_test_ghost.png");
+	SDL_Texture* texture = IMG_LoadTexture(mRenderer, texturePath.c_str());
 	if (texture)
 	{
 		mTextures.emplace(texturePath, texture);
