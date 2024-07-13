@@ -39,9 +39,12 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		void refreshAuth();
+		
 
 	private:
+		void requestAuth();
+		void requestRefreshAuth();
+
 		void requestSubs();
 		void processSubs();
 

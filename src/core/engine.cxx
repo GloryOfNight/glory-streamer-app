@@ -8,37 +8,6 @@
 #include <iostream>
 #include <thread>
 
-#if _WIN32
-#include <windows.h>
-int SetWindowAsTransparent(SDL_Window* window)
-{
-	const auto windowHandleLam = [](SDL_Window* window)
-	{
-		SDL_SysWMinfo wmInfo;
-		SDL_VERSION(&wmInfo.version);
-		SDL_GetWindowWMInfo(window, &wmInfo);
-		HWND hwnd = wmInfo.info.win.window;
-		return hwnd;
-	};
-
-	HWND handle = windowHandleLam(window);
-	if (!SetWindowLong(handle, GWL_EXSTYLE, GetWindowLong(handle, GWL_EXSTYLE) | WS_EX_LAYERED))
-	{
-		return 1;
-	}
-	if (!SetLayeredWindowAttributes(handle, RGB(255, 0, 255), 0, LWA_COLORKEY))
-	{
-		return 1;
-	}
-	return 0;
-}
-#else
-int32_t setWindowAsTransparent(SDL_Window* window)
-{
-	return 1;
-};
-#endif
-
 static gl::app::engine* gEngine{nullptr};
 
 gl::app::engine* gl::app::engine::get()
@@ -56,15 +25,13 @@ gl::app::engine::~engine()
 
 bool gl::app::engine::init()
 {
-	if (SDL_CreateWindowAndRenderer(1920, 1080, 0, &mWindow, &mRenderer))
+	if (SDL_CreateWindowAndRenderer(2560, 1440, SDL_WINDOW_MINIMIZED, &mWindow, &mRenderer))
 	{
 		std::cerr << "SDL_CreateWindowAndRenderer failed with: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
 	SDL_SetWindowTitle(mWindow, "Glory streamer app");
-
-	SetWindowAsTransparent(mWindow);
 
 	mTimerManager = std::unique_ptr<timer_manager>(new timer_manager());
 
@@ -77,7 +44,7 @@ void gl::app::engine::run()
 {
 	mRunning = true;
 
-	const int32_t frameTimeMs = 1000 / 30;
+	const int32_t frameTimeMs = 1000 / 60;
 
 	static uint32_t nowTicks = SDL_GetTicks();
 	static uint32_t nextTick = nowTicks;

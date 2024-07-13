@@ -16,33 +16,37 @@ static const std::string clientSecret = "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";
 
 void gl::app::youtube_manager::init()
 {
-	mAuthFuture = std::async(yt::api::initalAuth, clientId, clientSecret);
+	requestAuth();
 }
 
 void gl::app::youtube_manager::update(double delta)
 {
 	if (mAuthFuture.valid() && mAuthFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
 	{
-		auto [bAuth, authInfo] = mAuthFuture.get();
+		auto [bAuthed, authInfo] = mAuthFuture.get();
+		mAuthFuture = {};
 
-		if (!bAuth)
+		if (!bAuthed)
 		{
-			std::cerr << "Failed to authenticate" << std::endl;
+			std::cerr << "Failed to authenticate." << std::endl;
+			requestAuth();
 		}
 		else
 		{
+			std::cout << "Authenticated" << std::endl;
+
 			auth = authInfo;
 			bAuthSuccess = true;
 
 			auto timerManager = engine::get()->getTimerManager();
 
-			mRefreshAuthTimer = timerManager->addTimer(auth.expiresIn, std::bind(&youtube_manager::refreshAuth, this), false);
+			mRefreshAuthTimer = timerManager->addTimer(auth.expiresIn - 15, std::bind(&youtube_manager::requestRefreshAuth, this), false);
 
 			if (mRefreshRecentSubs == timer_handle())
 			{
 				// do not request for subs to save quota
-				mRefreshRecentSubs = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestSubs, this), true);
-				requestSubs();
+				//mRefreshRecentSubs = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestSubs, this), true);
+				//requestSubs();
 			}
 
 			if (mRefreshBroadcasts == timer_handle())
@@ -56,8 +60,6 @@ void gl::app::youtube_manager::update(double delta)
 				mRefreshLiveChat = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 			}
 		}
-
-		mAuthFuture = {};
 	}
 
 	processSubs();
@@ -69,9 +71,21 @@ void gl::app::youtube_manager::draw(SDL_Renderer* renderer)
 {
 }
 
-void gl::app::youtube_manager::refreshAuth()
+void gl::app::youtube_manager::requestAuth()
 {
-	bAuthSuccess = false;
+	std::cout << "Requesting fresh auth" << std::endl;
+	mAuthFuture = std::async(yt::api::initalAuth, clientId, clientSecret);
+}
+
+void gl::app::youtube_manager::requestRefreshAuth()
+{
+	if (!bAuthSuccess)
+	{
+		std::cerr << "Failed to refresh auth, not authenticated." << std::endl;
+		return;
+	}
+
+	std::cout << "Requesting refresh of auth" << std::endl;
 	mAuthFuture = std::async(yt::api::refreshAuth, clientId, clientSecret, auth.refreshToken);
 }
 
@@ -236,9 +250,10 @@ void gl::app::youtube_manager::processLiveChatMessages()
 
 			mLiveChatEtag = liveMessagesResponseJson["etag"];
 
-			auto timerManager = engine::get()->getTimerManager();
-			timerManager->clearTimer(mRefreshLiveChat);
-			mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
+			// saving quota
+			//auto timerManager = engine::get()->getTimerManager();
+			//timerManager->clearTimer(mRefreshLiveChat);
+			//mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 
 			for (const auto& item : liveMessagesResponseJson["items"])
 			{
