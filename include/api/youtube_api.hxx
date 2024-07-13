@@ -46,6 +46,12 @@ namespace yt::api::live
 			return *this;
 		}
 
+		listLiveBroadcastsRequest& setNextPageToken(const std::string& token)
+		{
+			url.append("&pageToken=" + token);
+			return *this;
+		}
+
 		// values: active, all, completed, upcoming
 		listLiveBroadcastsRequest& setBroadcastStatus(const std::string& status)
 		{
@@ -91,6 +97,12 @@ namespace yt::api::live
 			return *this;
 		}
 
+		listLiveChatMessagesRequest& setNextPageToken(const std::string& token)
+		{
+			url.append("&pageToken=" + token);
+			return *this;
+		}
+
 		listLiveChatMessagesRequest& setLiveChatId(const std::string& id)
 		{
 			url.append("&liveChatId=" + id);
@@ -125,6 +137,12 @@ namespace yt::api::live
 		listSubscribtionsRequest& setFields(const std::string& fields)
 		{
 			url.append("&fields=" + fields);
+			return *this;
+		}
+
+		listSubscribtionsRequest& setNextPageToken(const std::string& token)
+		{
+			url.append("&pageToken=" + token);
 			return *this;
 		}
 

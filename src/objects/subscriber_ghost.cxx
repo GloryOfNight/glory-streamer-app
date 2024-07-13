@@ -35,13 +35,16 @@ void gl::app::subscriber_ghost::init()
 void gl::app::subscriber_ghost::update(double delta)
 {
 	int32_t w{}, h{};
-	engine::get()->getWindowSize(&h, &w);
+	engine::get()->getWindowSize(&w, &h);
 
 	const double movedX = (mFwX * mSpeed) * delta;
 	const double movedY = (mFwY * mSpeed) * delta;
 
 	mX = std::clamp(mX + movedX, 0., static_cast<double>(w));
 	mY = std::clamp(mY + movedY, 0., static_cast<double>(h));
+
+	if (mX == 0. || mX == w || mY == 0. || mY == h)
+		generateNewForwardPos();
 
 	mSpriteComponent->setSrcOffset(0, 0);
 

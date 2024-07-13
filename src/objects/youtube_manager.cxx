@@ -44,8 +44,7 @@ void gl::app::youtube_manager::update(double delta)
 
 			if (mRefreshRecentSubs == timer_handle())
 			{
-				// do not request for subs to save quota
-				mRefreshRecentSubs = timerManager->addTimer(30.0, std::bind(&youtube_manager::requestSubs, this), true);
+				mRefreshRecentSubs = timerManager->addTimer(10.0, std::bind(&youtube_manager::requestSubs, this), true);
 				requestSubs();
 			}
 
@@ -57,7 +56,7 @@ void gl::app::youtube_manager::update(double delta)
 
 			if (mRefreshLiveChat == timer_handle())
 			{
-				mRefreshLiveChat = timerManager->addTimer(10.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
+				mRefreshLiveChat = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 			}
 		}
 	}
@@ -96,11 +95,11 @@ void gl::app::youtube_manager::requestSubs()
 
 	const auto listSubscribersRequest = yt::api::live::listSubscribtionsRequest(clientSecret)
 											.setParts({"snippet", "subscriberSnippet"})
-											.setFields("etag,items(id,subscriberSnippet(title,channelId),snippet(publishedAt))")
+											.setFields("etag,nextPageToken,items(id,subscriberSnippet(title,channelId),snippet(publishedAt))")
 											.setMyRecentSubscribers(true)
 											.setMaxResults(5);
 
-	mRecentSubsFuture = std::async(yt::api::fetch, listSubscribersRequest.url, auth.accessToken, mSubsEtag);
+	mRecentSubsFuture = std::async(yt::api::fetch, listSubscribersRequest.url, auth.accessToken, mSubsribersETag);
 }
 
 void gl::app::youtube_manager::processSubs()
@@ -123,7 +122,8 @@ void gl::app::youtube_manager::processSubs()
 		}
 		else
 		{
-			mSubsEtag = subsribersResponseJson["etag"];
+			mSubsribersETag = subsribersResponseJson["etag"];
+			mSubsribersNextPageToken = subsribersResponseJson["nextPageToken"];
 
 			for (const auto& item : subsribersResponseJson["items"])
 			{
@@ -155,12 +155,12 @@ void gl::app::youtube_manager::requestBroadcasts()
 
 	const auto listLiveBroadcastsRequest = yt::api::live::listLiveBroadcastsRequest(clientSecret)
 											   .setParts({"snippet", "status"})
-											   .setFields("etag,items(id,etag,snippet(title,liveChatId),status(lifeCycleStatus))")
+											   .setFields("etag,nextPageToken,items(id,etag,snippet(title,liveChatId),status(lifeCycleStatus))")
 											   .setBroadcastStatus("all")
 											   .setBroadcastType("event")
 											   .setMaxResults(5);
 
-	mRefreshBroadcastsFuture = std::async(yt::api::fetch, listLiveBroadcastsRequest.url, auth.accessToken, mBroadcastsEtag);
+	mRefreshBroadcastsFuture = std::async(yt::api::fetch, listLiveBroadcastsRequest.url, auth.accessToken, mBroadcastsETag);
 }
 
 void gl::app::youtube_manager::processBroadcasts()
@@ -184,7 +184,8 @@ void gl::app::youtube_manager::processBroadcasts()
 		}
 		else
 		{
-			mBroadcastsEtag = liveBroadcastsResponseJson["etag"];
+			mBroadcastsETag = liveBroadcastsResponseJson["etag"];
+			mBroadcastsNextPageToken = liveBroadcastsResponseJson["nextPageToken"];
 
 			for (const auto& item : liveBroadcastsResponseJson["items"])
 			{
@@ -227,11 +228,12 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 
 	const auto listLiveMessagesRequest = yt::api::live::listLiveChatMessagesRequest(clientSecret)
 											 .setParts({"snippet", "authorDetails"})
-											 .setFields("etag,pollingIntervalMillis,items(id,etag,snippet(type,publishedAt,displayMessage),authorDetails(channelId,displayName))")
+											 .setFields("etag,nextPageToken,pollingIntervalMillis,items(id,etag,snippet(type,publishedAt,displayMessage),authorDetails(channelId,displayName))")
+											 .setNextPageToken(mLiveChatNextPageToken)
 											 .setLiveChatId(liveBroadcast->liveChatId)
 											 .setMaxResults(200);
 
-	mRefreshLiveChatFuture = std::async(yt::api::fetch, listLiveMessagesRequest.url, auth.accessToken, mLiveChatEtag);
+	mRefreshLiveChatFuture = std::async(yt::api::fetch, listLiveMessagesRequest.url, auth.accessToken, mLiveChatETag);
 }
 
 void gl::app::youtube_manager::processLiveChatMessages()
@@ -255,14 +257,15 @@ void gl::app::youtube_manager::processLiveChatMessages()
 		}
 		else
 		{
+			mLiveChatNextPageToken = liveMessagesResponseJson["nextPageToken"];
 			uint32_t pollingMs = liveMessagesResponseJson["pollingIntervalMillis"];
 
-			mLiveChatEtag = liveMessagesResponseJson["etag"];
+			mLiveChatETag = liveMessagesResponseJson["etag"];
 
 			// saving quota
-			//auto timerManager = engine::get()->getTimerManager();
-			//timerManager->clearTimer(mRefreshLiveChat);
-			//mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
+			auto timerManager = engine::get()->getTimerManager();
+			timerManager->clearTimer(mRefreshLiveChat);
+			mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 
 			for (const auto& item : liveMessagesResponseJson["items"])
 			{

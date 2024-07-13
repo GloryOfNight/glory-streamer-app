@@ -64,17 +64,20 @@ namespace gl::app
 		timer_handle mRefreshRecentSubs{};
 		std::future<std::string> mRecentSubsFuture{};
 		std::vector<subscriber> mRecentSubs{};
-		std::string mSubsEtag{};
+		std::string mSubsribersETag{};
+		std::string mSubsribersNextPageToken{};
 
 		timer_handle mRefreshBroadcasts{};
 		std::future<std::string> mRefreshBroadcastsFuture{};
 		std::vector<broadcast> mBroadcasts{};
-		std::string mBroadcastsEtag{};
+		std::string mBroadcastsETag{};
+		std::string mBroadcastsNextPageToken{};
 
 		timer_handle mRefreshLiveChat{};
 		std::future<std::string> mRefreshLiveChatFuture{};
 		std::vector<live_chat_message> mLiveChat{};
-		std::string mLiveChatEtag{};
+		std::string mLiveChatETag{};
+		std::string mLiveChatNextPageToken{};
 
 		bool bAuthSuccess{};
 	};
