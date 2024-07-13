@@ -1,10 +1,16 @@
 ﻿#include "core/engine.hxx"
 
+#include "objects/subscriber_ghost.hxx"
+#include "objects/youtube_manager.hxx"
+
 #include <SDL2/SDL_syswm.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <algorithm>
 #include <format>
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_sdlrenderer2.h>
 #include <iostream>
 #include <thread>
 
@@ -34,6 +40,18 @@ bool gl::app::engine::init()
 	SDL_SetWindowTitle(mWindow, "Glory streamer app");
 
 	mTimerManager = std::unique_ptr<timer_manager>(new timer_manager());
+
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+	
+	auto newFont = io.Fonts->AddFontFromFileTTF("assets/fonts/Arsenal-Regular.ttf", 16, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplSDL2_InitForSDLRenderer(mWindow, mRenderer);
+	ImGui_ImplSDLRenderer2_Init(mRenderer);
 
 	gEngine = this;
 
@@ -75,13 +93,31 @@ void gl::app::engine::run()
 			object->update(deltaSeconds);
 		}
 
+		ImGui_ImplSDLRenderer2_NewFrame();
+		ImGui_ImplSDL2_NewFrame();
+		ImGui::NewFrame();
+
+		if (bShowObjectInspector)
+		{
+			showObjectInspector();
+		}
+		if (bShowYoutubeManagerInspector)
+		{
+			showYoutubeManagerExpector();
+		}
+
+		ImGui::Render();
+
 		SDL_SetRenderDrawColor(mRenderer, 255, 0, 255, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(mRenderer);
 
+		copyObjects = mObjects;
 		for (auto& object : copyObjects)
 		{
 			object->draw(mRenderer);
 		}
+
+		ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), mRenderer);
 
 		SDL_RenderPresent(mRenderer);
 	}
@@ -139,11 +175,106 @@ void gl::app::engine::pollEvents()
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
+		ImGui_ImplSDL2_ProcessEvent(&event);
 		switch (event.type)
 		{
+		case SDL_KEYUP:
+			if (event.key.keysym.sym == SDLK_0 && !bShowObjectInspector)
+			{
+				bShowObjectInspector = true;
+			}
+			else if (event.key.keysym.sym == SDLK_9 && !bShowYoutubeManagerInspector)
+			{
+				bShowYoutubeManagerInspector = true;
+			}
+			break;
 		case SDL_QUIT:
 			mRunning = false;
 			break;
 		}
 	}
+}
+
+void gl::app::engine::showObjectInspector()
+{
+	ImGui::Begin("Objects inspector", &bShowObjectInspector);
+
+	auto copyObjects = mObjects;
+	for (auto& object : copyObjects)
+	{
+		auto ghost = dynamic_cast<subscriber_ghost*>(object);
+
+		if (ghost)
+		{
+			ImGui::Text("Ghost - %s (%s)", ghost->getTitle().c_str(), ghost->getChannelId().c_str());
+
+			double x, y;
+			ghost->getPos(&x, &y);
+
+			float pos[2] = {static_cast<float>(x), static_cast<float>(y)};
+			ImGui::InputFloat2("Position", pos, "%.1f");
+
+			float speed = ghost->getSpeed();
+			ImGui::InputFloat("Speed", &speed, 0, 0, "%.1f");
+
+			ghost->setPos(pos[0], pos[1]);
+			ghost->setSpeed(speed);
+
+			bool bHide = ghost->isHidden();
+			ImGui::Checkbox("Hide", &bHide);
+			ghost->setHidden(bHide);
+
+			ImGui::Separator();
+		}
+	};
+
+	ImGui::End();
+}
+
+void gl::app::engine::showYoutubeManagerExpector()
+{
+	const auto pred = [](const object* obj)
+	{
+		return dynamic_cast<const youtube_manager*>(obj) != nullptr;
+	};
+
+	auto iter = std::find_if(mObjects.begin(), mObjects.end(), pred);
+
+	if (iter == mObjects.end())
+		return;
+
+	auto ytManager = dynamic_cast<youtube_manager*>(*iter);
+
+	ImGui::Begin("Youtube manager inspector", &bShowYoutubeManagerInspector);
+
+	ImGui::Text("Youtube manager");
+
+	ImGui::Separator();
+
+	const auto& subs = ytManager->getSubscribers();
+	for (const auto& sub : subs)
+	{
+		ImGui::Text("Subscriber - %s (%s) at %s", sub.title.c_str(), sub.channelId.c_str(), sub.publishedAt.c_str());
+	}
+
+	ImGui::Separator();
+
+	const auto& broadcasts = ytManager->getBroadcasts();
+	for (const auto& broadcast : broadcasts)
+	{
+		ImGui::Text("Broadcast - %s (%s)", broadcast.id.c_str(), broadcast.lifeCycleStatus.c_str());
+	}
+
+	ImGui::Separator();
+
+	const auto& chatMessages = ytManager->getLiveChatMessages();
+
+	ImGui::Text("Chat messages");
+
+	for (const auto& chatMessage : chatMessages)
+	{
+		ImGui::Text("%s (%s): %s", chatMessage.displayName.c_str(), chatMessage.channelId.c_str(), chatMessage.displayMessage.c_str());
+	}
+
+	ImGui::End();
 }

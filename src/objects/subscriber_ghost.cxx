@@ -4,11 +4,11 @@
 
 #include <random>
 
-gl::app::subsubscriber_ghost::subsubscriber_ghost(const std::string& subTitle, const std::string& subId)
+gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const std::string& subId)
 	: mSpriteComponent{}
 	, mFontComponent{}
 	, mSubTitle(subTitle)
-	, mSubId(subId)
+	, mSubChannelId(subId)
 {
 	mSpriteComponent = addComponent<sprite_component>("assets/sprites/ghost/misachi_ghost.png");
 	mFontComponent = addComponent<font_component>("assets/fonts/Buran USSR.ttf", 16);
@@ -16,13 +16,13 @@ gl::app::subsubscriber_ghost::subsubscriber_ghost(const std::string& subTitle, c
 	mFontComponent->setText(mSubTitle);
 }
 
-gl::app::subsubscriber_ghost::~subsubscriber_ghost()
+gl::app::subscriber_ghost::~subscriber_ghost()
 {
 }
 
-void gl::app::subsubscriber_ghost::init()
+void gl::app::subscriber_ghost::init()
 {
-	mUpdateForwardPosTimer = engine::get()->getTimerManager()->addTimer(5.0, std::bind(&subsubscriber_ghost::generateNewForwardPos, this), true);
+	mUpdateForwardPosTimer = engine::get()->getTimerManager()->addTimer(5.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
 	int32_t h{}, w{};
@@ -32,15 +32,13 @@ void gl::app::subsubscriber_ghost::init()
 	mY = h / 2;
 }
 
-void gl::app::subsubscriber_ghost::update(double delta)
+void gl::app::subscriber_ghost::update(double delta)
 {
 	int32_t w{}, h{};
 	engine::get()->getWindowSize(&h, &w);
 
-	const int32_t speed = 60;
-
-	const double movedX = (mFwX * speed) * delta;
-	const double movedY = (mFwY * speed) * delta;
+	const double movedX = (mFwX * mSpeed) * delta;
+	const double movedY = (mFwY * mSpeed) * delta;
 
 	mX = std::clamp(mX + movedX, 0., static_cast<double>(w));
 	mY = std::clamp(mY + movedY, 0., static_cast<double>(h));
@@ -55,13 +53,40 @@ void gl::app::subsubscriber_ghost::update(double delta)
 	mFontComponent->setDstOffset(mX - Rect.w / 2, mY - (destSize / 2) - (Rect.h / 2));
 }
 
-void gl::app::subsubscriber_ghost::draw(SDL_Renderer* renderer)
+void gl::app::subscriber_ghost::draw(SDL_Renderer* renderer)
 {
+	if (bIsHidden)
+		return;
+
 	mSpriteComponent->draw(renderer);
 	mFontComponent->draw(renderer);
 }
 
-void gl::app::subsubscriber_ghost::generateNewForwardPos()
+void gl::app::subscriber_ghost::getPos(double* x, double* y) const
+{
+	if (x)
+		*x = mX;
+	if (y)
+		*y = mY;
+}
+
+void gl::app::subscriber_ghost::setPos(double x, double y)
+{
+	mX = x;
+	mY = y;
+}
+
+void gl::app::subscriber_ghost::setSpeed(double speed)
+{
+	mSpeed = speed;
+}
+
+void gl::app::subscriber_ghost::setHidden(bool hidden)
+{
+	bIsHidden = hidden;
+}
+
+void gl::app::subscriber_ghost::generateNewForwardPos()
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());

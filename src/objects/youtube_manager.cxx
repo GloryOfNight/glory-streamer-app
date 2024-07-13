@@ -45,8 +45,8 @@ void gl::app::youtube_manager::update(double delta)
 			if (mRefreshRecentSubs == timer_handle())
 			{
 				// do not request for subs to save quota
-				//mRefreshRecentSubs = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestSubs, this), true);
-				//requestSubs();
+				mRefreshRecentSubs = timerManager->addTimer(30.0, std::bind(&youtube_manager::requestSubs, this), true);
+				requestSubs();
 			}
 
 			if (mRefreshBroadcasts == timer_handle())
@@ -57,7 +57,7 @@ void gl::app::youtube_manager::update(double delta)
 
 			if (mRefreshLiveChat == timer_handle())
 			{
-				mRefreshLiveChat = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
+				mRefreshLiveChat = timerManager->addTimer(10.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 			}
 		}
 	}
@@ -292,12 +292,12 @@ void gl::app::youtube_manager::processLiveChatMessages()
 					const auto& objects = engine::get()->getObjects();
 					const auto iter = std::find_if(objects.begin(), objects.end(), [&newLiveMessage](const object* obj)
 						{ 
-							const auto ghost = dynamic_cast<const subsubscriber_ghost*>(obj);
+							const auto ghost = dynamic_cast<const subscriber_ghost*>(obj);
 							return ghost && ghost->getChannelId() == newLiveMessage.channelId; });
 
 					if (iter == objects.end())
 					{
-						engine::get()->createObject<subsubscriber_ghost>(newLiveMessage.displayName, newLiveMessage.channelId);
+						engine::get()->createObject<subscriber_ghost>(newLiveMessage.displayName, newLiveMessage.channelId);
 					}
 				}
 			}

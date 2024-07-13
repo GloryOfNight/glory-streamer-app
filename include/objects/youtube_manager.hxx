@@ -39,7 +39,11 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		
+		const std::vector<subscriber>& getSubscribers() const { return mRecentSubs; };
+
+		const std::vector<broadcast>& getBroadcasts() const { return mBroadcasts; };
+
+		const std::vector<live_chat_message>& getLiveChatMessages() const { return mLiveChat; };
 
 	private:
 		void requestAuth();

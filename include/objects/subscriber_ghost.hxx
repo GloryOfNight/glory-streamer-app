@@ -7,20 +7,28 @@
 
 namespace gl::app
 {
-	class subsubscriber_ghost : public object
+	class subscriber_ghost : public object
 	{
 	public:
-		subsubscriber_ghost(const std::string& subTitle, const std::string& subId);
-		~subsubscriber_ghost();
+		subscriber_ghost(const std::string& subTitle, const std::string& subId);
+		~subscriber_ghost();
 
 		void init() override;
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		const std::string& getChannelId() const
-		{
-			return mSubId;
-		};
+		void getPos(double* x, double* y) const;
+		void setPos(double x, double y);
+
+		const std::string& getTitle() const { return mSubTitle; };
+
+		const std::string& getChannelId() const { return mSubChannelId; };
+
+		double getSpeed() const { return mSpeed; };
+		void setSpeed(double speed);
+
+		bool isHidden() const { return bIsHidden; };
+		void setHidden(bool hidden);
 
 	private:
 		void generateNewForwardPos();
@@ -29,11 +37,15 @@ namespace gl::app
 		font_component* mFontComponent;
 
 		std::string mSubTitle;
-		std::string mSubId;
+		std::string mSubChannelId;
 
 		double mX{}, mY{}; // current screen pos
 
 		timer_handle mUpdateForwardPosTimer;
 		double mFwX{}, mFwY{}; // forward pos
+
+		double mSpeed{60.0};
+
+		bool bIsHidden{};
 	};
 } // namespace gl::app

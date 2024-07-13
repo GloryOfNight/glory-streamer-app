@@ -52,6 +52,10 @@ namespace gl::app
 	private:
 		void pollEvents();
 
+		void showObjectInspector();
+
+		void showYoutubeManagerExpector();
+
 		SDL_Window* mWindow{};
 
 		SDL_Renderer* mRenderer{};
@@ -61,6 +65,10 @@ namespace gl::app
 		std::vector<object*> mObjects{};
 
 		std::unique_ptr<timer_manager> mTimerManager{};
+
+		bool bShowObjectInspector{};
+
+		bool bShowYoutubeManagerInspector{};
 
 		bool mRunning{};
 	};
