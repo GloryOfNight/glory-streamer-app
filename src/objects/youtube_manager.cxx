@@ -3,6 +3,7 @@
 #include "core/engine.hxx"
 #include "objects/subscriber_ghost.hxx"
 
+#include <format>
 #include <future>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -35,13 +36,13 @@ void gl::app::youtube_manager::update(double delta)
 
 			auto timerManager = engine::get()->getTimerManager();
 
-			mRefreshAuthTimer = timerManager->addTimer(auth.expiresIn + 1, std::bind(&youtube_manager::refreshAuth, this), false);
+			mRefreshAuthTimer = timerManager->addTimer(auth.expiresIn, std::bind(&youtube_manager::refreshAuth, this), false);
 
 			if (mRefreshRecentSubs == timer_handle())
 			{
 				// do not request for subs to save quota
-				//mRefreshRecentSubs = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestSubs, this), true);
-				//requestSubs();
+				mRefreshRecentSubs = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestSubs, this), true);
+				requestSubs();
 			}
 
 			if (mRefreshBroadcasts == timer_handle())
@@ -70,6 +71,7 @@ void gl::app::youtube_manager::draw(SDL_Renderer* renderer)
 
 void gl::app::youtube_manager::refreshAuth()
 {
+	bAuthSuccess = false;
 	mAuthFuture = std::async(yt::api::refreshAuth, clientId, clientSecret, auth.refreshToken);
 }
 
@@ -83,7 +85,7 @@ void gl::app::youtube_manager::requestSubs()
 											.setMyRecentSubscribers(true)
 											.setMaxResults(5);
 
-	mRecentSubsFuture = std::async(yt::api::fetch, listSubscribersRequest.url, auth.accessToken);
+	mRecentSubsFuture = std::async(yt::api::fetch, listSubscribersRequest.url, auth.accessToken, mSubsEtag);
 }
 
 void gl::app::youtube_manager::processSubs()
@@ -91,15 +93,20 @@ void gl::app::youtube_manager::processSubs()
 	if (mRecentSubsFuture.valid() && mRecentSubsFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
 	{
 		const std::string recentSubsResponse = mRecentSubsFuture.get();
+		mRecentSubsFuture = {};
+
+		if (recentSubsResponse.empty())
+			return;
 
 		const auto recentSubsResponseJson = nlohmann::json::parse(recentSubsResponse);
-
 		if (recentSubsResponseJson.contains("error"))
 		{
 			std::cerr << "Failed to fetch subs" << std::endl;
 		}
 		else
 		{
+			mSubsEtag = recentSubsResponseJson["etag"];
+
 			for (const auto& item : recentSubsResponseJson["items"])
 			{
 				const std::string id = item["id"];
@@ -114,13 +121,9 @@ void gl::app::youtube_manager::processSubs()
 					val.publishedAt = item["snippet"]["publishedAt"];
 
 					mRecentSubs.emplace_back(std::move(val));
-
-					// do stuff
 				}
 			}
 		}
-
-		mRecentSubsFuture = {};
 	}
 }
 
@@ -135,7 +138,7 @@ void gl::app::youtube_manager::requestBroadcasts()
 											   .setBroadcastType("event")
 											   .setMaxResults(5);
 
-	mRefreshBroadcastsFuture = std::async(yt::api::fetch, listLiveBroadcastsRequest.url, auth.accessToken);
+	mRefreshBroadcastsFuture = std::async(yt::api::fetch, listLiveBroadcastsRequest.url, auth.accessToken, mBroadcastsEtag);
 }
 
 void gl::app::youtube_manager::processBroadcasts()
@@ -143,18 +146,28 @@ void gl::app::youtube_manager::processBroadcasts()
 	if (mRefreshBroadcastsFuture.valid() && mRefreshBroadcastsFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
 	{
 		const std::string liveBroadcastsResponse = mRefreshBroadcastsFuture.get();
+		mRefreshBroadcastsFuture = {};
+
+		if (liveBroadcastsResponse.empty())
+			return;
 
 		const auto liveBroadcastsResponseJson = nlohmann::json::parse(liveBroadcastsResponse);
 
 		if (liveBroadcastsResponseJson.contains("error"))
 		{
-			std::cerr << "Failed to fetch broadcasts" << std::endl;
+			const int32_t code = liveBroadcastsResponseJson["error"]["code"];
+			const std::string message = liveBroadcastsResponseJson["error"]["message"];
+
+			std::cerr << std::format("Failed to fetch broadcasts: Code: {0}. Message: {1}.", code, message) << std::endl;
 		}
 		else
 		{
+			mBroadcastsEtag = liveBroadcastsResponseJson["etag"];
+
 			for (const auto& item : liveBroadcastsResponseJson["items"])
 			{
 				const std::string id = item["id"];
+				const std::string liveCycleStatus = item["status"]["lifeCycleStatus"];
 
 				const auto iter = std::find_if(mBroadcasts.begin(), mBroadcasts.end(), [&id](const broadcast& val)
 					{ return val.id == id; });
@@ -165,18 +178,17 @@ void gl::app::youtube_manager::processBroadcasts()
 					val.liveChatId = item["snippet"]["liveChatId"];
 					val.lifeCycleStatus = item["status"]["lifeCycleStatus"];
 
-					mBroadcasts.emplace_back(std::move(val));
+					const auto& newBroadcast = mBroadcasts.emplace_back(std::move(val));
 
-					std::cout << "Found new broadcast -" << val.lifeCycleStatus << std::endl;
+					std::cout << std::format("Found new broadcast - \"{0}\" in status \'{1}\'", newBroadcast.id, newBroadcast.lifeCycleStatus) << std::endl;
 				}
-				else
+				else if (iter->lifeCycleStatus != liveCycleStatus)
 				{
-					iter->lifeCycleStatus = item["status"]["lifeCycleStatus"];
+					iter->lifeCycleStatus = liveCycleStatus;
+					std::cout << std::format("Updated broadcast - \"{0}\" new status \'{1}\'", iter->id, iter->lifeCycleStatus) << std::endl;
 				}
 			}
 		}
-
-		mRefreshBroadcastsFuture = {};
 	}
 }
 
@@ -196,7 +208,7 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 											 .setLiveChatId(liveBroadcast->liveChatId)
 											 .setMaxResults(200);
 
-	mRefreshLiveChatFuture = std::async(yt::api::fetch, listLiveMessagesRequest.url, auth.accessToken);
+	mRefreshLiveChatFuture = std::async(yt::api::fetch, listLiveMessagesRequest.url, auth.accessToken, mLiveChatEtag);
 }
 
 void gl::app::youtube_manager::processLiveChatMessages()
@@ -204,21 +216,29 @@ void gl::app::youtube_manager::processLiveChatMessages()
 	if (mRefreshLiveChatFuture.valid() && mRefreshLiveChatFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
 	{
 		const std::string liveMessagesResponse = mRefreshLiveChatFuture.get();
+		mRefreshLiveChatFuture = {};
+
+		if (liveMessagesResponse.empty())
+			return;
 
 		const auto liveMessagesResponseJson = nlohmann::json::parse(liveMessagesResponse);
 
 		if (liveMessagesResponseJson.contains("error"))
 		{
-			std::cerr << "Failed to fetch live chat messages" << std::endl;
+			const int32_t code = liveMessagesResponseJson["error"]["code"];
+			const std::string message = liveMessagesResponseJson["error"]["message"];
+
+			std::cerr << std::format("Failed to fetch live chat: Code: {0}. Message: {1}.", code, message) << std::endl;
 		}
 		else
 		{
 			uint32_t pollingMs = liveMessagesResponseJson["pollingIntervalMillis"];
 
-			// disabled due to striking quota too much
-			//auto timerManager = engine::get()->getTimerManager();
-			//timerManager->clearTimer(mRefreshLiveChat);
-			//mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
+			mLiveChatEtag = liveMessagesResponseJson["etag"];
+
+			auto timerManager = engine::get()->getTimerManager();
+			timerManager->clearTimer(mRefreshLiveChat);
+			mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 
 			for (const auto& item : liveMessagesResponseJson["items"])
 			{
@@ -258,7 +278,5 @@ void gl::app::youtube_manager::processLiveChatMessages()
 				}
 			}
 		}
-
-		mRefreshLiveChatFuture = {};
 	}
 }

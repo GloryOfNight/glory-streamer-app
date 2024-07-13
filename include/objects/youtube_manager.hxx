@@ -57,14 +57,17 @@ namespace gl::app
 		timer_handle mRefreshRecentSubs{};
 		std::future<std::string> mRecentSubsFuture{};
 		std::vector<subscriber> mRecentSubs{};
+		std::string mSubsEtag{};
 
 		timer_handle mRefreshBroadcasts{};
 		std::future<std::string> mRefreshBroadcastsFuture{};
 		std::vector<broadcast> mBroadcasts{};
+		std::string mBroadcastsEtag{};
 
 		timer_handle mRefreshLiveChat{};
 		std::future<std::string> mRefreshLiveChatFuture{};
 		std::vector<live_chat_message> mLiveChat{};
+		std::string mLiveChatEtag{};
 
 		bool bAuthSuccess{};
 	};

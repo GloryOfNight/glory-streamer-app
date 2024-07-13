@@ -1,11 +1,43 @@
 ﻿#include "core/engine.hxx"
 
+#include <SDL2/SDL_syswm.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <algorithm>
 #include <format>
 #include <iostream>
 #include <thread>
+
+#if _WIN32
+#include <windows.h>
+int SetWindowAsTransparent(SDL_Window* window)
+{
+	const auto windowHandleLam = [](SDL_Window* window)
+	{
+		SDL_SysWMinfo wmInfo;
+		SDL_VERSION(&wmInfo.version);
+		SDL_GetWindowWMInfo(window, &wmInfo);
+		HWND hwnd = wmInfo.info.win.window;
+		return hwnd;
+	};
+
+	HWND handle = windowHandleLam(window);
+	if (!SetWindowLong(handle, GWL_EXSTYLE, GetWindowLong(handle, GWL_EXSTYLE) | WS_EX_LAYERED))
+	{
+		return 1;
+	}
+	if (!SetLayeredWindowAttributes(handle, RGB(255, 0, 255), 0, LWA_COLORKEY))
+	{
+		return 1;
+	}
+	return 0;
+}
+#else
+int32_t setWindowAsTransparent(SDL_Window* window)
+{
+	return 1;
+};
+#endif
 
 static gl::app::engine* gEngine{nullptr};
 
@@ -31,7 +63,8 @@ bool gl::app::engine::init()
 	}
 
 	SDL_SetWindowTitle(mWindow, "Glory streamer app");
-	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+
+	SetWindowAsTransparent(mWindow);
 
 	mTimerManager = std::unique_ptr<timer_manager>(new timer_manager());
 
@@ -75,7 +108,7 @@ void gl::app::engine::run()
 			object->update(deltaSeconds);
 		}
 
-		SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+		SDL_SetRenderDrawColor(mRenderer, 255, 0, 255, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(mRenderer);
 
 		for (auto& object : copyObjects)

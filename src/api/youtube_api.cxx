@@ -45,7 +45,7 @@ std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string client
 	bool bSuccess = false;
 	auth_info auth{};
 
-	const std::string redirectUri = "http://localhost:8080/callback";
+	const std::string redirectUri = "http://localhost:8080/oauth2callback";
 
 	std::cout << "========================\n"
 			  << std::endl;
@@ -85,7 +85,7 @@ std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string client
 		localServer.stop();
 	};
 
-	localServer.Get("/callback", callbackLam);
+	localServer.Get("/oauth2callback", callbackLam);
 	localServer.listen("localhost", 8080);
 
 	return std::pair<bool, auth_info>{bSuccess, auth};
@@ -102,7 +102,7 @@ std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string clien
 	curl = curl_easy_init();
 	if (curl)
 	{
-		std::string url = std::format("https://oauth2.googleapis.com/token?client_id={0}&client_secret={1}&refresh_token{2}&grant_type=refresh_token", clientId, clientSecret, refreshToken);
+		std::string url = std::format("https://oauth2.googleapis.com/token?client_id={0}&client_secret={1}&refresh_token={2}&grant_type=refresh_token", clientId, clientSecret, refreshToken);
 
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
@@ -141,7 +141,7 @@ std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string clien
 	return std::pair<bool, auth_info>{bSuccess, auth};
 }
 
-std::string yt::api::fetch(const std::string url, const std::string accessToken)
+std::string yt::api::fetch(const std::string url, const std::string accessToken, const std::string eTag)
 {
 	CURL* curl;
 	CURLcode res;
@@ -157,6 +157,11 @@ std::string yt::api::fetch(const std::string url, const std::string accessToken)
 		struct curl_slist* headers = NULL;
 		headers = curl_slist_append(headers, std::string("Authorization: Bearer " + accessToken).c_str());
 		headers = curl_slist_append(headers, "Accept: application/json");
+		if (!eTag.empty())
+		{
+			headers = curl_slist_append(headers, std::string("If-None-Match: " + eTag).c_str());
+		}
+
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
 		// Set the callback function
