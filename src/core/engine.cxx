@@ -94,6 +94,10 @@ void gl::app::engine::stop()
 
 void gl::app::engine::shutdown()
 {
+	for (auto& object : mObjects)
+	{
+		delete object;
+	}
 	mObjects.clear();
 
 	for (auto& [name, texture] : mTextures)

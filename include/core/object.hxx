@@ -3,8 +3,8 @@
 #include "object_component.hxx"
 
 #include <SDL2/SDL_render.h>
-#include <vector>
 #include <memory>
+#include <vector>
 
 namespace gl::app
 {
@@ -12,7 +12,12 @@ namespace gl::app
 	{
 	public:
 		object() = default;
+		object(const object&) = delete;
+		object(object&&) = delete;
 		virtual ~object() = default;
+
+		object& operator=(const object&) = delete;
+		object& operator=(object&&) = delete;
 
 		virtual void init() = 0;
 		virtual void update(double delta) = 0;

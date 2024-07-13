@@ -7,6 +7,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
+#include <curl/curl.h>
 #include <iostream>
 #include <thread>
 
@@ -25,6 +26,12 @@ int main(int argc, char* argv[], char* envp[])
 		return -1;
 	}
 
+	if (curl_global_init(CURL_GLOBAL_DEFAULT) != 0)
+	{
+		std::cerr << "Failed to initialize CURL" << std::endl;
+		return -1;
+	}
+
 	gl::app::engine eng{};
 
 	if (!eng.init())
@@ -39,6 +46,7 @@ int main(int argc, char* argv[], char* envp[])
 
 	eng.shutdown();
 
+	curl_global_cleanup();
 	TTF_Quit();
 	SDL_Quit();
 	return 0;

@@ -227,7 +227,7 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 
 	const auto listLiveMessagesRequest = yt::api::live::listLiveChatMessagesRequest(clientSecret)
 											 .setParts({"snippet", "authorDetails"})
-											 .setFields("etag,pollingIntervalMillis,items(id,etag,snippet(type,publishedAt,,displayMessage),authorDetails(channelId,displayName))")
+											 .setFields("etag,pollingIntervalMillis,items(id,etag,snippet(type,publishedAt,displayMessage),authorDetails(channelId,displayName))")
 											 .setLiveChatId(liveBroadcast->liveChatId)
 											 .setMaxResults(200);
 

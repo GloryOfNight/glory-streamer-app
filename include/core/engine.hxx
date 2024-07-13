@@ -11,7 +11,7 @@
 
 namespace gl::app
 {
-	class engine
+	class engine final
 	{
 	public:
 		static engine* get();
@@ -29,8 +29,6 @@ namespace gl::app
 		void stop();
 
 		void shutdown();
-
-		TTF_Font* LoadFont(const std::string& fontPath, int32_t fontSize);
 
 		SDL_Texture* LoadTexture(const std::string& texturePath);
 
