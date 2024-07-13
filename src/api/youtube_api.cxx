@@ -149,7 +149,8 @@ std::string yt::api::fetch(const std::string url, const std::string accessToken,
 {
 	CURL* curl;
 	CURLcode res;
-	std::string readBuffer;
+	std::string headerBuffer;
+	std::string responseBuffer;
 
 	curl = curl_easy_init();
 	if (curl)
@@ -167,12 +168,9 @@ std::string yt::api::fetch(const std::string url, const std::string accessToken,
 		}
 
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-		// Set the callback function
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-
-		// Set the user pointer to pass to the callback function
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+		curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &headerBuffer);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
 
 		// Perform the request
 		res = curl_easy_perform(curl);
@@ -188,5 +186,5 @@ std::string yt::api::fetch(const std::string url, const std::string accessToken,
 		curl_easy_cleanup(curl);
 	}
 
-	return readBuffer;
+	return responseBuffer;
 }

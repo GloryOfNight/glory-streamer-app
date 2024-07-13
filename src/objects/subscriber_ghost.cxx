@@ -2,6 +2,8 @@
 
 #include "core/engine.hxx"
 
+#include <random>
+
 gl::app::subsubscriber_ghost::subsubscriber_ghost(const std::string& subTitle, const std::string& subId)
 	: mSpriteComponent{}
 	, mFontComponent{}
@@ -10,15 +12,6 @@ gl::app::subsubscriber_ghost::subsubscriber_ghost(const std::string& subTitle, c
 {
 	mSpriteComponent = addComponent<sprite_component>("assets/sprites/ghost/misachi_ghost.png");
 	mFontComponent = addComponent<font_component>("assets/fonts/Buran USSR.ttf", 16);
-
-	int h, w;
-	engine::get()->getWindowSize(&h, &w);
-
-	mX = std::rand() % (h - 64);
-	mY = std::rand() % (w - 64);
-
-	mDstX = std::rand() % (h - 128);
-	mDstY = std::rand() % (w - 128);
 
 	mFontComponent->setText(mSubTitle);
 }
@@ -29,58 +22,32 @@ gl::app::subsubscriber_ghost::~subsubscriber_ghost()
 
 void gl::app::subsubscriber_ghost::init()
 {
-}
-
-void gl::app::subsubscriber_ghost::update(double delta)
-{
-	const int32_t speed = 60;
-	const double movedPixels = speed * delta;
-
-	const int32_t destSize = 64;
+	mUpdateForwardPosTimer = engine::get()->getTimerManager()->addTimer(5.0, std::bind(&subsubscriber_ghost::generateNewForwardPos, this), true);
+	generateNewForwardPos();
 
 	int32_t h{}, w{};
 	engine::get()->getWindowSize(&h, &w);
 
-	if (mX > mDstX)
-	{
-		mX -= movedPixels;
-		if (mX <= mDstX)
-		{
-			mX = mDstX;
-			mDstX = std::rand() % (h - destSize);
-		}
-	}
-	else if (mX < mDstX)
-	{
-		mX += movedPixels;
-		if (mX >= mDstX)
-		{
-			mX = mDstX;
-			mDstX = std::rand() % (h - destSize);
-		}
-	}
+	mX = w / 2;
+	mY = h / 2;
+}
 
-	if (mY > mDstY)
-	{
-		mY -= movedPixels;
-		if (mY <= mDstY)
-		{
-			mY = mDstY;
-			mDstY = std::rand() % (w - destSize);
-		}
-	}
-	else if (mY < mDstY)
-	{
-		mY += movedPixels;
-		if (mY >= mDstY)
-		{
-			mY = mDstY;
-			mDstY = std::rand() % (w - destSize);
-		}
-	}
+void gl::app::subsubscriber_ghost::update(double delta)
+{
+	int32_t w{}, h{};
+	engine::get()->getWindowSize(&h, &w);
+
+	const int32_t speed = 60;
+
+	const double movedX = (mFwX * speed) * delta;
+	const double movedY = (mFwY * speed) * delta;
+
+	mX = std::clamp(mX + movedX, 0., static_cast<double>(w));
+	mY = std::clamp(mY + movedY, 0., static_cast<double>(h));
 
 	mSpriteComponent->setSrcOffset(0, 0);
 
+	const int32_t destSize = 64;
 	mSpriteComponent->setDstSize(destSize, destSize);
 	mSpriteComponent->setDstOffset(mX - destSize / 2, mY - destSize / 2);
 
@@ -92,4 +59,15 @@ void gl::app::subsubscriber_ghost::draw(SDL_Renderer* renderer)
 {
 	mSpriteComponent->draw(renderer);
 	mFontComponent->draw(renderer);
+}
+
+void gl::app::subsubscriber_ghost::generateNewForwardPos()
+{
+	std::random_device rd;
+	std::mt19937 gen(rd());
+
+	std::uniform_real_distribution<double> dis(-1, 1);
+
+	mFwX = dis(gen);
+	mFwY = dis(gen);
 }
