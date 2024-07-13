@@ -96,6 +96,7 @@ void gl::app::youtube_manager::requestSubs()
 
 	const auto listSubscribersRequest = yt::api::live::listSubscribtionsRequest(clientSecret)
 											.setParts({"snippet", "subscriberSnippet"})
+											.setFields("etag,items(id,subscriberSnippet(title,channelId),snippet(publishedAt))")
 											.setMyRecentSubscribers(true)
 											.setMaxResults(5);
 
@@ -106,22 +107,25 @@ void gl::app::youtube_manager::processSubs()
 {
 	if (mRecentSubsFuture.valid() && mRecentSubsFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
 	{
-		const std::string recentSubsResponse = mRecentSubsFuture.get();
+		const std::string subscribersResponse = mRecentSubsFuture.get();
 		mRecentSubsFuture = {};
 
-		if (recentSubsResponse.empty())
+		if (subscribersResponse.empty())
 			return;
 
-		const auto recentSubsResponseJson = nlohmann::json::parse(recentSubsResponse);
-		if (recentSubsResponseJson.contains("error"))
+		const auto subsribersResponseJson = nlohmann::json::parse(subscribersResponse);
+		if (subsribersResponseJson.contains("error"))
 		{
-			std::cerr << "Failed to fetch subs" << std::endl;
+			const int32_t code = subsribersResponseJson["error"]["code"];
+			const std::string message = subsribersResponseJson["error"]["message"];
+
+			std::cerr << std::format("Failed to fetch subscribers: Code: {0}. Message: {1}.", code, message) << std::endl;
 		}
 		else
 		{
-			mSubsEtag = recentSubsResponseJson["etag"];
+			mSubsEtag = subsribersResponseJson["etag"];
 
-			for (const auto& item : recentSubsResponseJson["items"])
+			for (const auto& item : subsribersResponseJson["items"])
 			{
 				const std::string id = item["id"];
 
@@ -132,9 +136,12 @@ void gl::app::youtube_manager::processSubs()
 					subscriber val{};
 					val.id = id;
 					val.title = item["subscriberSnippet"]["title"];
+					val.channelId = item["subscriberSnippet"]["channelId"];
 					val.publishedAt = item["snippet"]["publishedAt"];
 
-					mRecentSubs.emplace_back(std::move(val));
+					const auto& newSubscriber = mRecentSubs.emplace_back(std::move(val));
+
+					std::cout << std::format("Subscriber - \"{0}\" ({1}) at \'{2}\'", newSubscriber.title, newSubscriber.channelId, newSubscriber.publishedAt) << std::endl;
 				}
 			}
 		}
@@ -148,6 +155,7 @@ void gl::app::youtube_manager::requestBroadcasts()
 
 	const auto listLiveBroadcastsRequest = yt::api::live::listLiveBroadcastsRequest(clientSecret)
 											   .setParts({"snippet", "status"})
+											   .setFields("etag,items(id,etag,snippet(title,liveChatId),status(lifeCycleStatus))")
 											   .setBroadcastStatus("all")
 											   .setBroadcastType("event")
 											   .setMaxResults(5);
@@ -219,6 +227,7 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 
 	const auto listLiveMessagesRequest = yt::api::live::listLiveChatMessagesRequest(clientSecret)
 											 .setParts({"snippet", "authorDetails"})
+											 .setFields("etag,pollingIntervalMillis,items(id,etag,snippet(type,publishedAt,,displayMessage),authorDetails(channelId,displayName))")
 											 .setLiveChatId(liveBroadcast->liveChatId)
 											 .setMaxResults(200);
 
@@ -275,20 +284,20 @@ void gl::app::youtube_manager::processLiveChatMessages()
 					val.displayMessage = item["snippet"]["displayMessage"];
 					val.channelId = item["authorDetails"]["channelId"];
 
-					std::cout << val.displayName << ": " << val.displayMessage << std::endl;
+					const auto& newLiveMessage = mLiveChat.emplace_back(std::move(val));
 
-					const auto& liveMessage = mLiveChat.emplace_back(std::move(val));
+					std::cout << std::format("New message: {0} - {1}", newLiveMessage.displayName, newLiveMessage.displayMessage) << std::endl;
 
 					// temp: move somewhere else
 					const auto& objects = engine::get()->getObjects();
-					const auto iter = std::find_if(objects.begin(), objects.end(), [&liveMessage](const object* obj)
+					const auto iter = std::find_if(objects.begin(), objects.end(), [&newLiveMessage](const object* obj)
 						{ 
 							const auto ghost = dynamic_cast<const subsubscriber_ghost*>(obj);
-							return ghost && ghost->getChannelId() == liveMessage.channelId; });
+							return ghost && ghost->getChannelId() == newLiveMessage.channelId; });
 
 					if (iter == objects.end())
 					{
-						engine::get()->createObject<subsubscriber_ghost>(liveMessage.displayName, liveMessage.channelId);
+						engine::get()->createObject<subsubscriber_ghost>(newLiveMessage.displayName, newLiveMessage.channelId);
 					}
 				}
 			}

@@ -40,6 +40,12 @@ namespace yt::api::live
 			return *this;
 		}
 
+		listLiveBroadcastsRequest& setFields(const std::string& fields)
+		{
+			url.append("&fields=" + fields);
+			return *this;
+		}
+
 		// values: active, all, completed, upcoming
 		listLiveBroadcastsRequest& setBroadcastStatus(const std::string& status)
 		{
@@ -79,6 +85,12 @@ namespace yt::api::live
 			return *this;
 		}
 
+		listLiveChatMessagesRequest& setFields(const std::string& fields)
+		{
+			url.append("&fields=" + fields);
+			return *this;
+		}
+
 		listLiveChatMessagesRequest& setLiveChatId(const std::string& id)
 		{
 			url.append("&liveChatId=" + id);
@@ -107,6 +119,12 @@ namespace yt::api::live
 		listSubscribtionsRequest& setParts(const std::vector<std::string>& parts)
 		{
 			appendArray(url, parts);
+			return *this;
+		}
+
+		listSubscribtionsRequest& setFields(const std::string& fields)
+		{
+			url.append("&fields=" + fields);
 			return *this;
 		}
 
