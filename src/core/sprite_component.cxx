@@ -45,6 +45,15 @@ void gl::app::sprite_component::draw(SDL_Renderer* renderer)
 {
 	if (mTexture)
 	{
-		SDL_RenderCopy(renderer, mTexture, &mSrcRect, &mDstRect);
+		SDL_RendererFlip Flip{};
+		if (bFlipHorizontal)
+			Flip = SDL_FLIP_HORIZONTAL;
+
+		SDL_RenderCopyEx(renderer, mTexture, &mSrcRect, &mDstRect, 0, nullptr, Flip);
 	}
+}
+
+void gl::app::sprite_component::setFlipHorizontal(bool flip)
+{
+	bFlipHorizontal = flip;
 }

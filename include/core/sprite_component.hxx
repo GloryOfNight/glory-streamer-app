@@ -23,9 +23,13 @@ namespace gl::app
 
 		const SDL_Rect& getSrcRect() const { return mSrcRect; }
 
+		void setFlipHorizontal(bool flip);
+
 	private:
 		SDL_Texture* mTexture{};
 		SDL_Rect mSrcRect{};
 		SDL_Rect mDstRect{};
+
+		bool bFlipHorizontal{ false };
 	};
 } // namespace gl::app

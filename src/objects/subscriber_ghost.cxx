@@ -61,6 +61,7 @@ void gl::app::subscriber_ghost::draw(SDL_Renderer* renderer)
 	if (bIsHidden)
 		return;
 
+	mSpriteComponent->setFlipHorizontal(mFwX < 0);
 	mSpriteComponent->draw(renderer);
 	mFontComponent->draw(renderer);
 }
