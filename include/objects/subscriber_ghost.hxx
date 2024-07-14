@@ -7,9 +7,19 @@
 
 namespace gl::app
 {
+	struct ghost_box
+	{
+		double x{}, y{};
+		double w{}, h{};
+	};
+
+	
+
 	class subscriber_ghost : public object
 	{
 	public:
+		static ghost_box& getGhostBox();
+
 		subscriber_ghost(const std::string& subTitle, const std::string& subId);
 		~subscriber_ghost();
 

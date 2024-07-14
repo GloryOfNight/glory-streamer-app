@@ -44,7 +44,7 @@ void gl::app::youtube_manager::update(double delta)
 
 			if (mRefreshRecentSubs == timer_handle())
 			{
-				mRefreshRecentSubs = timerManager->addTimer(30.0, std::bind(&youtube_manager::requestSubs, this), true);
+				mRefreshRecentSubs = timerManager->addTimer(180.0, std::bind(&youtube_manager::requestSubs, this), true);
 				requestSubs();
 			}
 

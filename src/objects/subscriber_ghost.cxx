@@ -4,6 +4,12 @@
 
 #include <random>
 
+gl::app::ghost_box& gl::app::subscriber_ghost::getGhostBox()
+{
+	static ghost_box ghostBox{0, 0, 2560, 1440};
+	return ghostBox;
+}
+
 gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const std::string& subId)
 	: mSpriteComponent{}
 	, mGhostTitleFontComponent{}
@@ -42,8 +48,9 @@ void gl::app::subscriber_ghost::update(double delta)
 	const double movedX = (mFwX * mSpeed) * delta;
 	const double movedY = (mFwY * mSpeed) * delta;
 
-	mX = std::clamp(mX + movedX, 0., static_cast<double>(w));
-	mY = std::clamp(mY + movedY, 0., static_cast<double>(h));
+	const auto& ghostBox = getGhostBox();
+	mX = std::clamp(mX + movedX, ghostBox.x, ghostBox.w);
+	mY = std::clamp(mY + movedY, ghostBox.y, ghostBox.h);
 
 	if (mX == 0. || mX == w || mY == 0. || mY == h)
 		generateNewForwardPos();
@@ -116,10 +123,9 @@ void gl::app::subscriber_ghost::setMessage(const std::string& message)
 
 void gl::app::subscriber_ghost::generateNewForwardPos()
 {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-
-	std::uniform_real_distribution<double> dis(-1, 1);
+	static std::random_device rd{};
+	static std::mt19937 gen(rd());
+	static std::uniform_real_distribution<double> dis(-1, 1);
 
 	mFwX = dis(gen);
 	mFwY = dis(gen);

@@ -226,6 +226,28 @@ void gl::app::engine::showObjectInspector()
 	}
 
 	ImGui::Separator();
+
+	auto& ghostBox = subscriber_ghost::getGhostBox();
+
+	ImGui::Text("Ghost box limits");
+	float limitHorz[2] = {static_cast<float>(ghostBox.x), static_cast<float>(ghostBox.w)};
+	float limitVert[2] = {static_cast<float>(ghostBox.y), static_cast<float>(ghostBox.h)};
+	ImGui::InputFloat2("Limit X", limitHorz);
+	ImGui::InputFloat2("Limit Y", limitVert);
+
+	if (limitHorz[0] < limitHorz[1])
+		ghostBox.x = limitHorz[0];
+
+	if (limitHorz[0] < limitHorz[1])
+		ghostBox.w = limitHorz[1];
+
+	if (limitVert[0] < limitVert[1])
+		ghostBox.y = limitVert[0];
+
+	if (limitVert[0] < limitVert[1])
+		ghostBox.h = limitVert[1];
+
+	ImGui::Separator();
 	ImGui::Text("Objects (Total %i)", static_cast<int32_t>(mObjects.size()));
 
 	static char newMessage[512] = {0};
