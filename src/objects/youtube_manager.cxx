@@ -300,12 +300,14 @@ void gl::app::youtube_manager::processLiveChatMessages()
 
 					if (iter == objects.end())
 					{
-						engine::get()->createObject<subscriber_ghost>(newLiveMessage.displayName, newLiveMessage.channelId);
+						auto ghost = engine::get()->createObject<subscriber_ghost>(newLiveMessage.displayName, newLiveMessage.channelId);
+						ghost->setMessage(newLiveMessage.displayMessage);
 					}
 					else
 					{
-						const auto ghost = dynamic_cast<subscriber_ghost*>(*iter);
+						auto ghost = dynamic_cast<subscriber_ghost*>(*iter);
 						ghost->setSpeed(ghost->getSpeed() + 1);
+						ghost->setMessage(newLiveMessage.displayMessage);
 					}
 				}
 			}

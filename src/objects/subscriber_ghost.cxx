@@ -6,14 +6,16 @@
 
 gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const std::string& subId)
 	: mSpriteComponent{}
-	, mFontComponent{}
+	, mGhostTitleFontComponent{}
 	, mSubTitle(subTitle)
 	, mSubChannelId(subId)
 {
 	mSpriteComponent = addComponent<sprite_component>("assets/sprites/ghost/misachi_ghost.png");
-	mFontComponent = addComponent<font_component>("assets/fonts/Buran USSR.ttf", 16);
+	mGhostTitleFontComponent = addComponent<font_component>("assets/fonts/Buran USSR.ttf", 16);
+	mGhostMessageFontComponent = addComponent<font_component>("assets/fonts/Arsenal-BoldItalic.ttf", 18);
 
-	mFontComponent->setText(mSubTitle);
+	mGhostTitleFontComponent->setText(mSubTitle);
+	mGhostMessageFontComponent->setWrapping(360);
 }
 
 gl::app::subscriber_ghost::~subscriber_ghost()
@@ -52,8 +54,11 @@ void gl::app::subscriber_ghost::update(double delta)
 	mSpriteComponent->setDstSize(destSize, destSize);
 	mSpriteComponent->setDstOffset(mX - destSize / 2, mY - destSize / 2);
 
-	const auto Rect = mFontComponent->getDstRect();
-	mFontComponent->setDstOffset(mX - Rect.w / 2, mY - (destSize / 2) - (Rect.h / 2));
+	auto Rect = mGhostTitleFontComponent->getDstRect();
+	mGhostTitleFontComponent->setDstOffset(mX - Rect.w / 2, mY - (destSize / 2) - (Rect.h / 2) - 5);
+
+	Rect = mGhostMessageFontComponent->getDstRect();
+	mGhostMessageFontComponent->setDstOffset(mX - Rect.w / 2, mY + (destSize / 2));
 }
 
 void gl::app::subscriber_ghost::draw(SDL_Renderer* renderer)
@@ -63,7 +68,11 @@ void gl::app::subscriber_ghost::draw(SDL_Renderer* renderer)
 
 	mSpriteComponent->setFlipHorizontal(mFwX < 0);
 	mSpriteComponent->draw(renderer);
-	mFontComponent->draw(renderer);
+
+	mGhostTitleFontComponent->draw(renderer);
+
+	if (!bHideMessage)
+		mGhostMessageFontComponent->draw(renderer);
 }
 
 void gl::app::subscriber_ghost::getPos(double* x, double* y) const
@@ -88,6 +97,21 @@ void gl::app::subscriber_ghost::setSpeed(double speed)
 void gl::app::subscriber_ghost::setHidden(bool hidden)
 {
 	bIsHidden = hidden;
+}
+
+void gl::app::subscriber_ghost::setMessage(const std::string& message)
+{
+	mGhostMessageFontComponent->setText(message);
+	bHideMessage = false;
+
+	auto timerManager = engine::get()->getTimerManager();
+
+	if (mHideMessageTimer)
+	{
+		timerManager->clearTimer(mHideMessageTimer);
+	}
+
+	mHideMessageTimer = timerManager->addTimer(12.0, std::bind(&subscriber_ghost::showMessage, this, false), false);
 }
 
 void gl::app::subscriber_ghost::generateNewForwardPos()

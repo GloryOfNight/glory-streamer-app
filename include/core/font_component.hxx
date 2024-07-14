@@ -22,6 +22,8 @@ namespace gl::app
 
 		const SDL_Rect& getDstRect() const { return mDstRect; }
 
+		void setWrapping(uint16_t wrapping);
+
 	private:
 		TTF_Font* mFont{};
 

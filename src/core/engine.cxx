@@ -226,7 +226,10 @@ void gl::app::engine::showObjectInspector()
 	}
 
 	ImGui::Separator();
-	ImGui::Text("Objects (Total %d)", mObjects.size());
+	ImGui::Text("Objects (Total %i)", static_cast<int32_t>(mObjects.size()));
+
+	static char newMessage[512] = {0};
+	ImGui::InputText("Custom message", newMessage, sizeof(newMessage));
 
 	auto copyObjects = mObjects;
 	for (auto& object : copyObjects)
@@ -235,7 +238,7 @@ void gl::app::engine::showObjectInspector()
 
 		if (ghost)
 		{
-			const auto& channelId = ghost->getChannelId();
+			const auto channelId = ghost->getChannelId();
 
 			ImGui::Text("Ghost - %s (%s)", ghost->getTitle().c_str(), ghost->getChannelId().c_str());
 
@@ -260,6 +263,13 @@ void gl::app::engine::showObjectInspector()
 			if (ImGui::Button((std::string("Remove##") + channelId).c_str()))
 			{
 				removeObject(ghost);
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button((std::string("Set Message##") + channelId).c_str()))
+			{
+				ghost->setMessage(newMessage);
 			}
 
 			ImGui::Separator();

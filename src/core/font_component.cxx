@@ -70,3 +70,9 @@ void gl::app::font_component::draw(SDL_Renderer* renderer)
 
 	SDL_RenderCopy(renderer, mTexture, nullptr, &mDstRect);
 }
+
+void gl::app::font_component::setWrapping(uint16_t wrapping)
+{
+	mWrapping = wrapping;
+	bDirty = true;
+}

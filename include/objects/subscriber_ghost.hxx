@@ -30,11 +30,16 @@ namespace gl::app
 		bool isHidden() const { return bIsHidden; };
 		void setHidden(bool hidden);
 
+		void setMessage(const std::string& message);
+
+		void showMessage(bool bShow) { bHideMessage = !bShow; };
+
 	private:
 		void generateNewForwardPos();
 
 		sprite_component* mSpriteComponent;
-		font_component* mFontComponent;
+		font_component* mGhostTitleFontComponent;
+		font_component* mGhostMessageFontComponent;
 
 		std::string mSubTitle;
 		std::string mSubChannelId;
@@ -45,6 +50,9 @@ namespace gl::app
 		double mFwX{}, mFwY{}; // forward pos
 
 		double mSpeed{60.0};
+
+		bool bHideMessage{true};
+		timer_handle mHideMessageTimer;
 
 		bool bIsHidden{};
 	};
