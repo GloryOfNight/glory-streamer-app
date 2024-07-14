@@ -195,4 +195,6 @@ namespace yt::api
 	std::pair<bool, auth_info> refreshAuth(const std::string clientId, const std::string clientSecret, const std::string refreshToken);
 
 	std::string fetch(const std::string url, const std::string accessToken, const std::string eTag);
+
+	std::string post(const std::string url, const std::string accessToken, const std::string postJson);
 } // namespace yt::api

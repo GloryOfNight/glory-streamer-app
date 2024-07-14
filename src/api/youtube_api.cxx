@@ -49,7 +49,7 @@ std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string client
 
 	std::cout << "========================\n"
 			  << std::endl;
-	const std::string uri = std::format("https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/youtube.readonly&access_type=offline&include_granted_scopes=true&response_type=code&client_id={0}&redirect_uri={1}", clientId, OAUTH2_REDIRECT_URL);
+	const std::string uri = std::format("https://accounts.google.com/o/oauth2/v2/auth?scope=https://www.googleapis.com/auth/youtube&access_type=offline&include_granted_scopes=true&response_type=code&client_id={0}&redirect_uri={1}", clientId, OAUTH2_REDIRECT_URL);
 	std::cout << uri << std::endl;
 	std::cout << "\n========================" << std::endl;
 	std::cout << "Please follow to link above and process to gAuth" << std::endl;
@@ -183,6 +183,48 @@ std::string yt::api::fetch(const std::string url, const std::string accessToken,
 
 		// Clean up
 		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl);
+	}
+
+	return responseBuffer;
+}
+
+std::string yt::api::post(const std::string url, const std::string accessToken, const std::string postJson)
+{
+	CURL* curl;
+	CURLcode res;
+	std::string headerBuffer;
+	std::string responseBuffer;
+
+	curl = curl_easy_init();
+	if (curl)
+	{
+		// Set the URL
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postJson.c_str());
+
+		// Set the Authorization header
+		struct curl_slist* headers = NULL;
+		headers = curl_slist_append(headers, std::string("Authorization: Bearer " + accessToken).c_str());
+		headers = curl_slist_append(headers, std::string("Accept: application/json").c_str());
+		headers = curl_slist_append(headers, std::string("Content-Type: application/json").c_str());
+
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &headerBuffer);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
+
+		// Perform the request
+		res = curl_easy_perform(curl);
+
+		// Check for errors
+		if (res != CURLE_OK)
+		{
+			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+		}
+
+		// Clean up
+		//curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
 	}
 

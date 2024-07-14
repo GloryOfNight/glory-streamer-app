@@ -38,7 +38,7 @@ void gl::app::subscriber_ghost::init()
 	mUpdateForwardPosTimer = engine::get()->getTimerManager()->addTimer(5.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
-	mDeathTimer = engine::get()->getTimerManager()->addTimer(480.0, std::bind(&subscriber_ghost::destroy, this), false);
+	mDeathTimer = engine::get()->getTimerManager()->addTimer(600.0, std::bind(&subscriber_ghost::destroy, this), false);
 
 	int32_t w{}, h{};
 	engine::get()->getWindowSize(&w, &h);

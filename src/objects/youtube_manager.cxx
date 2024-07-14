@@ -50,7 +50,7 @@ void gl::app::youtube_manager::update(double delta)
 
 			if (mRefreshBroadcasts == timer_handle())
 			{
-				mRefreshBroadcasts = timerManager->addTimer(180.0, std::bind(&youtube_manager::requestBroadcasts, this), true);
+				mRefreshBroadcasts = timerManager->addTimer(300.0, std::bind(&youtube_manager::requestBroadcasts, this), true);
 				requestBroadcasts();
 			}
 
@@ -158,7 +158,7 @@ void gl::app::youtube_manager::requestBroadcasts()
 											   .setFields("etag,nextPageToken,items(id,etag,snippet(title,liveChatId),status(lifeCycleStatus))")
 											   .setBroadcastStatus("all")
 											   .setBroadcastType("event")
-											   .setMaxResults(5);
+											   .setMaxResults(3);
 
 	mRefreshBroadcastsFuture = std::async(yt::api::fetch, listLiveBroadcastsRequest.url, auth.accessToken, mBroadcastsETag);
 }
@@ -231,7 +231,7 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 											 .setFields("etag,nextPageToken,pollingIntervalMillis,items(id,etag,snippet(type,publishedAt,displayMessage),authorDetails(channelId,displayName))")
 											 .setNextPageToken(mLiveChatNextPageToken)
 											 .setLiveChatId(liveBroadcast->liveChatId)
-											 .setMaxResults(200);
+											 .setMaxResults(20);
 
 	mRefreshLiveChatFuture = std::async(yt::api::fetch, listLiveMessagesRequest.url, auth.accessToken, mLiveChatETag);
 }
