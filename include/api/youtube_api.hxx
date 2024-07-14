@@ -48,7 +48,8 @@ namespace yt::api::live
 
 		listLiveBroadcastsRequest& setNextPageToken(const std::string& token)
 		{
-			url.append("&pageToken=" + token);
+			if (!token.empty())
+				url.append("&pageToken=" + token);
 			return *this;
 		}
 
@@ -99,7 +100,8 @@ namespace yt::api::live
 
 		listLiveChatMessagesRequest& setNextPageToken(const std::string& token)
 		{
-			url.append("&pageToken=" + token);
+			if (!token.empty())
+				url.append("&pageToken=" + token);
 			return *this;
 		}
 
@@ -142,7 +144,8 @@ namespace yt::api::live
 
 		listSubscribtionsRequest& setNextPageToken(const std::string& token)
 		{
-			url.append("&pageToken=" + token);
+			if (!token.empty())
+				url.append("&pageToken=" + token);
 			return *this;
 		}
 

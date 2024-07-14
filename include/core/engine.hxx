@@ -47,6 +47,8 @@ namespace gl::app
 
 		const std::vector<object*>& getObjects() const { return mObjects; }
 
+		bool removeObject(object* obj);
+
 		timer_manager* getTimerManager() const { return mTimerManager.get(); }
 
 	private:

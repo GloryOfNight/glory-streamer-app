@@ -44,7 +44,7 @@ void gl::app::youtube_manager::update(double delta)
 
 			if (mRefreshRecentSubs == timer_handle())
 			{
-				mRefreshRecentSubs = timerManager->addTimer(10.0, std::bind(&youtube_manager::requestSubs, this), true);
+				mRefreshRecentSubs = timerManager->addTimer(30.0, std::bind(&youtube_manager::requestSubs, this), true);
 				requestSubs();
 			}
 
@@ -56,7 +56,7 @@ void gl::app::youtube_manager::update(double delta)
 
 			if (mRefreshLiveChat == timer_handle())
 			{
-				mRefreshLiveChat = timerManager->addTimer(5.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
+				mRefreshLiveChat = timerManager->addTimer(7.5, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 			}
 		}
 	}
@@ -97,7 +97,7 @@ void gl::app::youtube_manager::requestSubs()
 											.setParts({"snippet", "subscriberSnippet"})
 											.setFields("etag,nextPageToken,items(id,subscriberSnippet(title,channelId),snippet(publishedAt))")
 											.setMyRecentSubscribers(true)
-											.setMaxResults(5);
+											.setMaxResults(3);
 
 	mRecentSubsFuture = std::async(yt::api::fetch, listSubscribersRequest.url, auth.accessToken, mSubsribersETag);
 }
@@ -263,9 +263,9 @@ void gl::app::youtube_manager::processLiveChatMessages()
 			mLiveChatETag = liveMessagesResponseJson["etag"];
 
 			// saving quota
-			auto timerManager = engine::get()->getTimerManager();
-			timerManager->clearTimer(mRefreshLiveChat);
-			mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
+			//auto timerManager = engine::get()->getTimerManager();
+			//timerManager->clearTimer(mRefreshLiveChat);
+			//mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);
 
 			for (const auto& item : liveMessagesResponseJson["items"])
 			{
@@ -301,6 +301,11 @@ void gl::app::youtube_manager::processLiveChatMessages()
 					if (iter == objects.end())
 					{
 						engine::get()->createObject<subscriber_ghost>(newLiveMessage.displayName, newLiveMessage.channelId);
+					}
+					else
+					{
+						const auto ghost = dynamic_cast<subscriber_ghost*>(*iter);
+						ghost->setSpeed(ghost->getSpeed() + 1);
 					}
 				}
 			}

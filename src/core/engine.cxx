@@ -45,7 +45,7 @@ bool gl::app::engine::init()
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-	
+
 	auto newFont = io.Fonts->AddFontFromFileTTF("assets/fonts/Arsenal-Regular.ttf", 16, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 
 	ImGui::StyleColorsDark();
@@ -170,6 +170,18 @@ void gl::app::engine::getWindowSize(int32_t* width, int32_t* height)
 	SDL_GetWindowSize(mWindow, width, height);
 }
 
+bool gl::app::engine::removeObject(object* obj)
+{
+	auto iter = std::find(mObjects.begin(), mObjects.end(), obj);
+	const bool bFind = iter != mObjects.end();
+	if (bFind)
+	{
+		mObjects.erase(iter);
+		delete obj;
+	}
+	return bFind;
+}
+
 void gl::app::engine::pollEvents()
 {
 	SDL_Event event;
@@ -199,6 +211,23 @@ void gl::app::engine::showObjectInspector()
 {
 	ImGui::Begin("Objects inspector", &bShowObjectInspector);
 
+	ImGui::Text("Spawn new ghost");
+
+	static char newGhostName[24] = {0};
+	ImGui::InputText("Name", newGhostName, sizeof(newGhostName));
+	ImGui::SameLine();
+	static float newGhostSpeed = 60.0;
+	ImGui::InputFloat("Speed", &newGhostSpeed, 0.f, 0.f, "%.1f");
+
+	if (ImGui::Button("Spawn ghost"))
+	{
+		auto newGhost = createObject<subscriber_ghost>(newGhostName, std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+		newGhost->setSpeed(newGhostSpeed);
+	}
+
+	ImGui::Separator();
+	ImGui::Text("Objects (Total %d)", mObjects.size());
+
 	auto copyObjects = mObjects;
 	for (auto& object : copyObjects)
 	{
@@ -206,23 +235,32 @@ void gl::app::engine::showObjectInspector()
 
 		if (ghost)
 		{
+			const auto& channelId = ghost->getChannelId();
+
 			ImGui::Text("Ghost - %s (%s)", ghost->getTitle().c_str(), ghost->getChannelId().c_str());
 
 			double x, y;
 			ghost->getPos(&x, &y);
 
 			float pos[2] = {static_cast<float>(x), static_cast<float>(y)};
-			ImGui::InputFloat2("Position", pos, "%.1f");
+			ImGui::InputFloat2((std::string("Position##") + channelId).c_str(), pos, "%.1f");
 
 			float speed = ghost->getSpeed();
-			ImGui::InputFloat("Speed", &speed, 0, 0, "%.1f");
+			ImGui::InputFloat((std::string("Speed##") + channelId).c_str(), &speed, 0, 0, "%.1f");
 
 			ghost->setPos(pos[0], pos[1]);
 			ghost->setSpeed(speed);
 
 			bool bHide = ghost->isHidden();
-			ImGui::Checkbox("Hide", &bHide);
+			ImGui::Checkbox((std::string("Hide##") + channelId).c_str(), &bHide);
 			ghost->setHidden(bHide);
+
+			ImGui::SameLine();
+
+			if (ImGui::Button((std::string("Remove##") + channelId).c_str()))
+			{
+				removeObject(ghost);
+			}
 
 			ImGui::Separator();
 		}
@@ -251,20 +289,21 @@ void gl::app::engine::showYoutubeManagerExpector()
 
 	ImGui::Separator();
 
+	ImGui::Text("Latest subscribers");
+
 	const auto& subs = ytManager->getSubscribers();
 	for (const auto& sub : subs)
 	{
 		ImGui::Text("Subscriber - %s (%s) at %s", sub.title.c_str(), sub.channelId.c_str(), sub.publishedAt.c_str());
 	}
-
 	ImGui::Separator();
 
+	ImGui::Text("Broadcasts");
 	const auto& broadcasts = ytManager->getBroadcasts();
 	for (const auto& broadcast : broadcasts)
 	{
 		ImGui::Text("Broadcast - %s (%s)", broadcast.id.c_str(), broadcast.lifeCycleStatus.c_str());
 	}
-
 	ImGui::Separator();
 
 	const auto& chatMessages = ytManager->getLiveChatMessages();
