@@ -26,12 +26,19 @@ gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const s
 
 gl::app::subscriber_ghost::~subscriber_ghost()
 {
+	auto eng = engine::get();
+	auto timerManager = eng->getTimerManager();
+	timerManager->clearTimer(mUpdateForwardPosTimer);
+	timerManager->clearTimer(mHideMessageTimer);
+	timerManager->clearTimer(mDeathTimer);
 }
 
 void gl::app::subscriber_ghost::init()
 {
 	mUpdateForwardPosTimer = engine::get()->getTimerManager()->addTimer(5.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
+
+	mDeathTimer = engine::get()->getTimerManager()->addTimer(480.0, std::bind(&subscriber_ghost::destroy, this), false);
 
 	int32_t w{}, h{};
 	engine::get()->getWindowSize(&w, &h);
@@ -113,12 +120,15 @@ void gl::app::subscriber_ghost::setMessage(const std::string& message)
 
 	auto timerManager = engine::get()->getTimerManager();
 
-	if (mHideMessageTimer)
-	{
-		timerManager->clearTimer(mHideMessageTimer);
-	}
+	timerManager->clearTimer(mHideMessageTimer);
+	timerManager->resetTimer(mDeathTimer);
 
 	mHideMessageTimer = timerManager->addTimer(12.0, std::bind(&subscriber_ghost::showMessage, this, false), false);
+}
+
+void gl::app::subscriber_ghost::destroy()
+{
+	engine::get()->removeObject(this);
 }
 
 void gl::app::subscriber_ghost::generateNewForwardPos()

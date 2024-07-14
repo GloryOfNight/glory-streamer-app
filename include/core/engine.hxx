@@ -66,6 +66,8 @@ namespace gl::app
 
 		std::vector<object*> mObjects{};
 
+		std::vector<object*> mObjectsToRemove{};
+
 		std::unique_ptr<timer_manager> mTimerManager{};
 
 		bool bShowObjectInspector{};

@@ -44,6 +44,7 @@ namespace gl::app
 
 		void showMessage(bool bShow) { bHideMessage = !bShow; };
 
+		void destroy();
 	private:
 		void generateNewForwardPos();
 
@@ -58,6 +59,8 @@ namespace gl::app
 
 		timer_handle mUpdateForwardPosTimer;
 		double mFwX{}, mFwY{}; // forward pos
+
+		timer_handle mDeathTimer;
 
 		double mSpeed{60.0};
 

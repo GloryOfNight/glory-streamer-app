@@ -17,6 +17,8 @@ namespace gl::app
 
 		timer_handle addTimer(double seconds, timer_callback callback, bool bLoop = false);
 
+		bool resetTimer(timer_handle handle);
+
 		bool clearTimer(timer_handle handle);
 
 	private:

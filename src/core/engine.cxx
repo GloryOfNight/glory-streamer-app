@@ -83,6 +83,19 @@ void gl::app::engine::run()
 
 		const double deltaSeconds = elapsedMs / 1000.;
 
+		// remove all objects that were marked for removal
+		const auto copyObjectToRemove = mObjectsToRemove;
+		for (auto& obj : copyObjectToRemove)
+		{
+			auto iter = std::find(mObjects.begin(), mObjects.end(), obj);
+			if (iter != mObjects.end())
+			{
+				mObjects.erase(iter);
+				delete obj;
+			}
+		}
+		mObjectsToRemove.clear();
+
 		pollEvents();
 
 		mTimerManager->update(deltaSeconds);
@@ -176,8 +189,7 @@ bool gl::app::engine::removeObject(object* obj)
 	const bool bFind = iter != mObjects.end();
 	if (bFind)
 	{
-		mObjects.erase(iter);
-		delete obj;
+		mObjectsToRemove.push_back(obj);
 	}
 	return bFind;
 }

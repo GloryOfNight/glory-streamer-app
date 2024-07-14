@@ -40,18 +40,36 @@ gl::app::timer_handle gl::app::timer_manager::addTimer(double seconds, timer_cal
 	return mTimers.emplace_back(std::move(newTimer)).handle;
 }
 
-bool gl::app::timer_manager::clearTimer(timer_handle handle)
+bool gl::app::timer_manager::resetTimer(timer_handle handle)
 {
+	if (handle == timer_handle())
+		return false;
+
 	auto iter = std::find_if(mTimers.begin(), mTimers.end(), [handle](const timer& timer)
 		{ return timer.handle == handle; });
 
-	if (iter != mTimers.end())
+	const bool bFind = iter != mTimers.end();
+	if (bFind)
+	{
+		iter->remainingSeconds = iter->seconds;
+	}
+	return bFind;
+}
+
+bool gl::app::timer_manager::clearTimer(timer_handle handle)
+{
+	if (handle == timer_handle())
+		return false;
+
+	auto iter = std::find_if(mTimers.begin(), mTimers.end(), [handle](const timer& timer)
+		{ return timer.handle == handle; });
+
+	const bool bFind = iter != mTimers.end();
+	if (bFind)
 	{
 		iter->bActive = false;
-		return true;
 	}
-
-	return false;
+	return bFind;
 }
 
 void gl::app::timer_manager::clearInactive()
