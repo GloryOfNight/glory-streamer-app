@@ -1,7 +1,7 @@
-#include "objects/youtube_manager.hxx"
+#include "actors/youtube_manager.hxx"
 
+#include "actors/subscriber_ghost.hxx"
 #include "core/engine.hxx"
-#include "objects/subscriber_ghost.hxx"
 
 #include <format>
 #include <future>

@@ -1,4 +1,4 @@
-#include "core/sprite_component.hxx"
+#include "actors/components/sprite_component.hxx"
 
 #include "core/engine.hxx"
 
@@ -19,22 +19,10 @@ void gl::app::sprite_component::setSrcSize(int32_t w, int32_t h)
 	mSrcRect.h = h;
 }
 
-void gl::app::sprite_component::setSrcOffset(int32_t x, int32_t y)
-{
-	mSrcRect.x = x;
-	mSrcRect.y = y;
-}
-
 void gl::app::sprite_component::setDstSize(int32_t w, int32_t h)
 {
 	mDstRect.w = w;
 	mDstRect.h = h;
-}
-
-void gl::app::sprite_component::setDstOffset(int32_t x, int32_t y)
-{
-	mDstRect.x = x;
-	mDstRect.y = y;
 }
 
 void gl::app::sprite_component::update(double delta)
@@ -49,7 +37,14 @@ void gl::app::sprite_component::draw(SDL_Renderer* renderer)
 		if (bFlipHorizontal)
 			Flip = SDL_FLIP_HORIZONTAL;
 
-		SDL_RenderCopyEx(renderer, mTexture, &mSrcRect, &mDstRect, 0, nullptr, Flip);
+		mDstRect.x = getWorldPosX();
+		mDstRect.y = getWorldPosY();
+
+		mDstRect.x -= mDstRect.w / 2;
+		mDstRect.y -= mDstRect.h / 2;
+		
+		SDL_Point center = { mDstRect.x + mDstRect.w / 2, mDstRect.y + mDstRect.h / 2 };
+		SDL_RenderCopyEx(renderer, mTexture, &mSrcRect, &mDstRect, 0, &center, Flip);
 	}
 }
 

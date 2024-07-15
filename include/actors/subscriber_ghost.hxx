@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/font_component.hxx"
-#include "core/object.hxx"
-#include "core/sprite_component.hxx"
+#include "core/actor.hxx"
 #include "core/timer_manager.hxx"
+
+#include <string>
 
 namespace gl::app
 {
@@ -13,9 +13,7 @@ namespace gl::app
 		double w{}, h{};
 	};
 
-	
-
-	class subscriber_ghost : public object
+	class subscriber_ghost : public actor
 	{
 	public:
 		static ghost_box& getGhostBox();
@@ -27,9 +25,6 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		void getPos(double* x, double* y) const;
-		void setPos(double x, double y);
-
 		const std::string& getTitle() const { return mSubTitle; };
 
 		const std::string& getChannelId() const { return mSubChannelId; };
@@ -37,25 +32,21 @@ namespace gl::app
 		double getSpeed() const { return mSpeed; };
 		void setSpeed(double speed);
 
-		bool isHidden() const { return bIsHidden; };
-		void setHidden(bool hidden);
-
 		void setMessage(const std::string& message);
 
-		void showMessage(bool bShow) { bHideMessage = !bShow; };
+		void showMessage(bool bShow);
 
 		void destroy();
+
 	private:
 		void generateNewForwardPos();
 
-		sprite_component* mSpriteComponent;
-		font_component* mGhostTitleFontComponent;
-		font_component* mGhostMessageFontComponent;
+		class sprite_component* mSpriteComponent;
+		class font_component* mGhostTitleFontComponent;
+		class font_component* mGhostMessageFontComponent;
 
 		std::string mSubTitle;
 		std::string mSubChannelId;
-
-		double mX{}, mY{}; // current screen pos
 
 		timer_handle mUpdateForwardPosTimer;
 		double mFwX{}, mFwY{}; // forward pos
@@ -64,9 +55,6 @@ namespace gl::app
 
 		double mSpeed{60.0};
 
-		bool bHideMessage{true};
 		timer_handle mHideMessageTimer;
-
-		bool bIsHidden{};
 	};
 } // namespace gl::app

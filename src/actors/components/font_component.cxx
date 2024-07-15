@@ -1,4 +1,4 @@
-#include "core/font_component.hxx"
+#include "actors/components/font_component.hxx"
 
 #include "core/engine.hxx"
 
@@ -23,12 +23,6 @@ void gl::app::font_component::setText(const std::string& text)
 {
 	mText = text;
 	bDirty = true;
-}
-
-void gl::app::font_component::setDstOffset(int32_t x, int32_t y)
-{
-	mDstRect.x = x;
-	mDstRect.y = y;
 }
 
 void gl::app::font_component::update(double delta)
@@ -67,6 +61,12 @@ void gl::app::font_component::draw(SDL_Renderer* renderer)
 		SDL_FreeSurface(textSurf);
 		bDirty = false;
 	}
+
+	mDstRect.x = getWorldPosX();
+	mDstRect.y = getWorldPosY();
+
+	mDstRect.x -= mDstRect.w / 2;
+	//mDstRect.y -= mDstRect.h / 2;
 
 	SDL_RenderCopy(renderer, mTexture, nullptr, &mDstRect);
 }

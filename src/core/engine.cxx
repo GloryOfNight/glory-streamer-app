@@ -1,7 +1,7 @@
 ﻿#include "core/engine.hxx"
 
-#include "objects/subscriber_ghost.hxx"
-#include "objects/youtube_manager.hxx"
+#include "actors/subscriber_ghost.hxx"
+#include "actors/youtube_manager.hxx"
 
 #include <SDL2/SDL_syswm.h>
 #include <SDL_image.h>
@@ -288,9 +288,9 @@ void gl::app::engine::showObjectInspector()
 			ghost->setPos(pos[0], pos[1]);
 			ghost->setSpeed(speed);
 
-			bool bHide = ghost->isHidden();
+			bool bHide = ghost->getVisible();
 			ImGui::Checkbox((std::string("Hide##") + channelId).c_str(), &bHide);
-			ghost->setHidden(bHide);
+			ghost->setVisible(bHide);
 
 			ImGui::SameLine();
 

@@ -12,7 +12,7 @@ include(cmake/PreventInSourceBuilds.cmake)
 
 add_subdirectory(thirdparty)
 
-add_executable(${PROJECT_NAME} "src/main.cxx" "src/api/youtube_api.cxx" "src/core/engine.cxx" "src/core/sprite_component.cxx" "src/core/font_component.cxx" "src/objects/subscriber_ghost.cxx" "src/objects/youtube_manager.cxx" "src/core/timer_manager.cxx")
+add_executable(${PROJECT_NAME} "src/main.cxx" "src/api/youtube_api.cxx" "src/core/engine.cxx" "src/actors/components/sprite_component.cxx" "src/actors/components/font_component.cxx" "src/actors/subscriber_ghost.cxx" "src/actors/youtube_manager.cxx" "src/core/timer_manager.cxx" "src/core/actor.cxx" "src/core/actor_component.cxx")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL2-static SDL2_image SDL2_ttf imgui-static CURL::libcurl httplib nlohmann_json)
 

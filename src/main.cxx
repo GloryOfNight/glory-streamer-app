@@ -1,9 +1,8 @@
 #define SDL_MAIN_HANDLED
 
+#include "actors/youtube_manager.hxx"
 #include "api/youtube_api.hxx"
 #include "core/engine.hxx"
-#include "objects/subscriber_ghost.hxx"
-#include "objects/youtube_manager.hxx"
 
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
