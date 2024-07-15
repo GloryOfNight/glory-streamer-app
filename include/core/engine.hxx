@@ -36,7 +36,7 @@ namespace gl::app
 		T* createObject(Args&&... args)
 		{
 			T* obj = new T(args...);
-			mObjects.push_back(obj);
+			mObjects.push_back(std::unique_ptr<object>(obj));
 
 			obj->init();
 
@@ -45,7 +45,7 @@ namespace gl::app
 
 		void getWindowSize(int32_t* width, int32_t* height);
 
-		const std::vector<object*>& getObjects() const { return mObjects; }
+		const std::vector<std::unique_ptr<object>>& getObjects() const { return mObjects; }
 
 		bool removeObject(object* obj);
 
@@ -53,6 +53,8 @@ namespace gl::app
 
 	private:
 		void pollEvents();
+
+		void createSubsystems();
 
 		void showObjectInspector();
 
@@ -64,7 +66,7 @@ namespace gl::app
 
 		std::map<std::string, SDL_Texture*> mTextures{};
 
-		std::vector<object*> mObjects{};
+		std::vector<std::unique_ptr<object>> mObjects{};
 
 		std::vector<object*> mObjectsToRemove{};
 

@@ -1,6 +1,6 @@
-#include "actors/youtube_manager.hxx"
+#include "subsystems/youtube_manager.hxx"
 
-#include "actors/subscriber_ghost.hxx"
+#include "actors/chat_ghost.hxx"
 #include "core/engine.hxx"
 
 #include <format>
@@ -16,6 +16,7 @@ static const std::string clientSecret = "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";
 
 void gl::app::youtube_manager::init()
 {
+	subsystem::init();
 	requestAuth();
 }
 
@@ -293,9 +294,9 @@ void gl::app::youtube_manager::processLiveChatMessages()
 
 					// temp: move somewhere else
 					const auto& objects = engine::get()->getObjects();
-					const auto iter = std::find_if(objects.begin(), objects.end(), [&newLiveMessage](const object* obj)
+					const auto iter = std::find_if(objects.begin(), objects.end(), [&newLiveMessage](const std::unique_ptr<object>& obj)
 						{ 
-							const auto ghost = dynamic_cast<const subscriber_ghost*>(obj);
+							const auto ghost = dynamic_cast<const subscriber_ghost*>(obj.get());
 							return ghost && ghost->getChannelId() == newLiveMessage.channelId; });
 
 					if (iter == objects.end())
@@ -305,7 +306,7 @@ void gl::app::youtube_manager::processLiveChatMessages()
 					}
 					else
 					{
-						auto ghost = dynamic_cast<subscriber_ghost*>(*iter);
+						auto ghost = dynamic_cast<subscriber_ghost*>(iter->get());
 						ghost->setSpeed(ghost->getSpeed() + 1);
 						ghost->setMessage(newLiveMessage.displayMessage);
 					}

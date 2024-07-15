@@ -1,7 +1,5 @@
 #define SDL_MAIN_HANDLED
 
-#include "actors/youtube_manager.hxx"
-#include "api/youtube_api.hxx"
 #include "core/engine.hxx"
 
 #include <SDL2/SDL.h>
@@ -38,8 +36,6 @@ int main(int argc, char* argv[], char* envp[])
 		std::cerr << "Failed to initialize engine" << std::endl;
 		return -1;
 	}
-
-	eng.createObject<gl::app::youtube_manager>();
 
 	eng.run();
 

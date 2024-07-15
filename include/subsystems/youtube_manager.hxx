@@ -1,14 +1,14 @@
 #pragma once
 
 #include "api/youtube_api.hxx"
-#include "core/object.hxx"
+#include "core/subsystem.hxx"
 #include "core/timer_manager.hxx"
 
 #include <future>
 
 namespace gl::app
 {
-	class youtube_manager : public object
+	class youtube_manager : public subsystem
 	{
 	public:
 		struct subscriber

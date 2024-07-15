@@ -1,4 +1,4 @@
-#include "actors/subscriber_ghost.hxx"
+#include "actors/chat_ghost.hxx"
 
 #include "actors/components/font_component.hxx"
 #include "actors/components/sprite_component.hxx"

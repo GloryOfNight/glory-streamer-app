@@ -1,7 +1,7 @@
 ﻿#include "core/engine.hxx"
 
-#include "actors/subscriber_ghost.hxx"
-#include "actors/youtube_manager.hxx"
+#include "actors/chat_ghost.hxx"
+#include "subsystems/youtube_manager.hxx"
 
 #include <SDL2/SDL_syswm.h>
 #include <SDL_image.h>
@@ -55,6 +55,8 @@ bool gl::app::engine::init()
 
 	gEngine = this;
 
+	createSubsystems();
+
 	return true;
 }
 
@@ -87,21 +89,28 @@ void gl::app::engine::run()
 		const auto copyObjectToRemove = mObjectsToRemove;
 		for (auto& obj : copyObjectToRemove)
 		{
-			auto iter = std::find(mObjects.begin(), mObjects.end(), obj);
-			if (iter != mObjects.end())
+			const auto pred = [obj](const std::unique_ptr<object>& other)
 			{
-				mObjects.erase(iter);
-				delete obj;
-			}
+				return other.get() == obj;
+			};
+
+			std::erase_if(mObjects, pred);
 		}
 		mObjectsToRemove.clear();
+
+		for (auto& object : mObjects)
+		{
+			if (!object->isInitialized())
+				object->init();
+			if (!object->isInitialized())
+				throw std::runtime_error("Object unable to init! Did you forget to call parent init()?");
+		};
 
 		pollEvents();
 
 		mTimerManager->update(deltaSeconds);
 
-		auto copyObjects = mObjects;
-		for (auto& object : copyObjects)
+		for (auto& object : mObjects)
 		{
 			object->update(deltaSeconds);
 		}
@@ -124,8 +133,7 @@ void gl::app::engine::run()
 		SDL_SetRenderDrawColor(mRenderer, 255, 0, 255, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(mRenderer);
 
-		copyObjects = mObjects;
-		for (auto& object : copyObjects)
+		for (auto& object : mObjects)
 		{
 			object->draw(mRenderer);
 		}
@@ -143,10 +151,6 @@ void gl::app::engine::stop()
 
 void gl::app::engine::shutdown()
 {
-	for (auto& object : mObjects)
-	{
-		delete object;
-	}
 	mObjects.clear();
 
 	for (auto& [name, texture] : mTextures)
@@ -185,7 +189,12 @@ void gl::app::engine::getWindowSize(int32_t* width, int32_t* height)
 
 bool gl::app::engine::removeObject(object* obj)
 {
-	auto iter = std::find(mObjects.begin(), mObjects.end(), obj);
+	const auto pred = [obj](const std::unique_ptr<object>& other)
+	{
+		return other.get() == obj;
+	};
+
+	auto iter = std::find_if(mObjects.begin(), mObjects.end(), pred);
 	const bool bFind = iter != mObjects.end();
 	if (bFind)
 	{
@@ -217,6 +226,12 @@ void gl::app::engine::pollEvents()
 			break;
 		}
 	}
+}
+
+void gl::app::engine::createSubsystems()
+{
+	// todo: make sure subsystems are unique
+	createObject<youtube_manager>();
 }
 
 void gl::app::engine::showObjectInspector()
@@ -265,10 +280,9 @@ void gl::app::engine::showObjectInspector()
 	static char newMessage[512] = {0};
 	ImGui::InputText("Custom message", newMessage, sizeof(newMessage));
 
-	auto copyObjects = mObjects;
-	for (auto& object : copyObjects)
+	for (auto& object : mObjects)
 	{
-		auto ghost = dynamic_cast<subscriber_ghost*>(object);
+		auto ghost = dynamic_cast<subscriber_ghost*>(object.get());
 
 		if (ghost)
 		{
@@ -315,9 +329,9 @@ void gl::app::engine::showObjectInspector()
 
 void gl::app::engine::showYoutubeManagerExpector()
 {
-	const auto pred = [](const object* obj)
+	const auto pred = [](const std::unique_ptr<object>& obj)
 	{
-		return dynamic_cast<const youtube_manager*>(obj) != nullptr;
+		return dynamic_cast<const youtube_manager*>(obj.get()) != nullptr;
 	};
 
 	auto iter = std::find_if(mObjects.begin(), mObjects.end(), pred);
@@ -325,7 +339,7 @@ void gl::app::engine::showYoutubeManagerExpector()
 	if (iter == mObjects.end())
 		return;
 
-	auto ytManager = dynamic_cast<youtube_manager*>(*iter);
+	auto ytManager = dynamic_cast<youtube_manager*>(iter->get());
 
 	ImGui::Begin("Youtube manager inspector", &bShowYoutubeManagerInspector);
 
