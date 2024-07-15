@@ -10,7 +10,6 @@ namespace gl::app
 	{
 	public:
 		sprite_component(const std::string& texPath);
-		~sprite_component();
 
 		void setSrcSize(int32_t w, int32_t h);
 
@@ -23,11 +22,15 @@ namespace gl::app
 
 		void setFlipHorizontal(bool flip);
 
+		void setAngle(double angle);
+
 	private:
 		SDL_Texture* mTexture{};
 		SDL_Rect mSrcRect{};
 		SDL_Rect mDstRect{};
 
-		bool bFlipHorizontal{ false };
+		double mAngle{0.0};
+
+		bool bFlipHorizontal{false};
 	};
 } // namespace gl::app

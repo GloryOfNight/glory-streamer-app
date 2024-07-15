@@ -4,6 +4,7 @@
 #include "actors/components/sprite_component.hxx"
 #include "core/engine.hxx"
 
+#include <cmath>
 #include <random>
 
 gl::app::ghost_box& gl::app::subscriber_ghost::getGhostBox()
@@ -56,6 +57,33 @@ void gl::app::subscriber_ghost::init()
 
 void gl::app::subscriber_ghost::update(double delta)
 {
+	const double rotSpeed = delta;
+	if (mFwX > mTargetFwX)
+	{
+		mFwX -= rotSpeed;
+		if (mFwX < mTargetFwX)
+			mFwX = mTargetFwX;
+	}
+	else if (mFwX < mTargetFwX)
+	{
+		mFwX += rotSpeed;
+		if (mFwX > mTargetFwX)
+			mFwX = mTargetFwX;
+	}
+
+	if (mFwY > mTargetFwY)
+	{
+		mFwY -= rotSpeed;
+		if (mFwY < mTargetFwY)
+			mFwY = mTargetFwY;
+	}
+	else if (mFwY < mTargetFwY)
+	{
+		mFwY += rotSpeed;
+		if (mFwY > mTargetFwY)
+			mFwY = mTargetFwY;
+	}
+
 	const double movedX = (mFwX * mSpeed) * delta;
 	const double movedY = (mFwY * mSpeed) * delta;
 
@@ -66,15 +94,12 @@ void gl::app::subscriber_ghost::update(double delta)
 	if (mX == ghostBox.x || mX == ghostBox.w || mY == ghostBox.y || mY == ghostBox.h)
 		generateNewForwardPos();
 
+	mSpriteComponent->setFlipHorizontal(mFwX < 0);
 	actor::update(delta);
 }
 
 void gl::app::subscriber_ghost::draw(SDL_Renderer* renderer)
 {
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	SDL_RenderDrawPoint(renderer, static_cast<int>(mX), static_cast<int>(mY));
-
-	mSpriteComponent->setFlipHorizontal(mFwX < 0);
 	actor::draw(renderer);
 }
 
@@ -112,6 +137,6 @@ void gl::app::subscriber_ghost::generateNewForwardPos()
 	static std::mt19937 gen(rd());
 	static std::uniform_real_distribution<double> dis(-1, 1);
 
-	mFwX = dis(gen);
-	mFwY = dis(gen);
+	mTargetFwX = dis(gen);
+	mTargetFwY = dis(gen);
 }

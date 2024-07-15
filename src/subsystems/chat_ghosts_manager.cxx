@@ -6,10 +6,6 @@
 
 static gl::app::chat_ghost_subsystem* gChatGhostSubsystem = nullptr;
 
-void ggg(const std::string& channelId, const std::string& displayName, const std::string& displayMessage)
-{
-}
-
 gl::app::chat_ghost_subsystem* gl::app::chat_ghost_subsystem::get()
 {
 	return nullptr;
