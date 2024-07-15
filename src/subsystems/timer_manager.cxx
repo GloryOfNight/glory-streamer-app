@@ -1,4 +1,4 @@
-#include "core/timer_manager.hxx"
+#include "subsystems/timer_manager.hxx"
 
 static gl::app::timer_manager* gTimerManager = nullptr;
 
@@ -23,7 +23,14 @@ void gl::app::timer_manager::update(double delta)
 		timer.remainingSeconds -= delta;
 		if (timer.remainingSeconds <= 0.0)
 		{
-			timer.callback();
+			try
+			{
+				std::invoke(timer.callback);
+			}
+			catch (std::bad_function_call badFuncCall)
+			{
+			}
+
 			if (timer.bInLoop)
 				timer.remainingSeconds = timer.seconds;
 			else

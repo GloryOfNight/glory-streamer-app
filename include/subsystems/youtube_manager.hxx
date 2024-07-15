@@ -1,17 +1,21 @@
 #pragma once
 
 #include "api/youtube_api.hxx"
+#include "core/delegate.hxx"
 #include "core/subsystem.hxx"
-#include "core/timer_manager.hxx"
+#include "subsystems/timer_manager.hxx"
 
 #include <future>
+#include <string>
 
 namespace gl::app
 {
 	class youtube_manager : public subsystem
 	{
 	public:
+		delegate<const std::string& /*channelId*/, const std::string& /*displayName*/, const std::string& /*displayMessage*/> onLiveChatMessage;
 
+	public:
 		static youtube_manager* get();
 
 		struct subscriber

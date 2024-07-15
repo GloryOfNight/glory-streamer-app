@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/object.hxx"
-#include "core/timer_manager.hxx"
 
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
@@ -37,8 +36,6 @@ namespace gl::app
 		{
 			T* obj = new T(args...);
 			mObjects.push_back(std::unique_ptr<object>(obj));
-
-			obj->init();
 
 			return obj;
 		}

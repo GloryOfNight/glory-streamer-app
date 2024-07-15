@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/actor.hxx"
-#include "core/timer_manager.hxx"
+#include "subsystems/timer_manager.hxx"
 
 #include <string>
 

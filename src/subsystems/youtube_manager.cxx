@@ -302,24 +302,7 @@ void gl::app::youtube_manager::processLiveChatMessages()
 
 					std::cout << std::format("New message: {0} - {1}", newLiveMessage.displayName, newLiveMessage.displayMessage) << std::endl;
 
-					// temp: move somewhere else
-					const auto& objects = engine::get()->getObjects();
-					const auto iter = std::find_if(objects.begin(), objects.end(), [&newLiveMessage](const std::unique_ptr<object>& obj)
-						{ 
-							const auto ghost = dynamic_cast<const subscriber_ghost*>(obj.get());
-							return ghost && ghost->getChannelId() == newLiveMessage.channelId; });
-
-					if (iter == objects.end())
-					{
-						auto ghost = engine::get()->createObject<subscriber_ghost>(newLiveMessage.displayName, newLiveMessage.channelId);
-						ghost->setMessage(newLiveMessage.displayMessage);
-					}
-					else
-					{
-						auto ghost = dynamic_cast<subscriber_ghost*>(iter->get());
-						ghost->setSpeed(ghost->getSpeed() + 1);
-						ghost->setMessage(newLiveMessage.displayMessage);
-					}
+					onLiveChatMessage.execute(newLiveMessage.channelId, newLiveMessage.displayName, newLiveMessage.displayMessage);
 				}
 			}
 		}

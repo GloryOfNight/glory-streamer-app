@@ -1,6 +1,8 @@
 ﻿#include "core/engine.hxx"
 
 #include "actors/chat_ghost.hxx"
+#include "subsystems/chat_ghosts_manager.hxx"
+#include "subsystems/timer_manager.hxx"
 #include "subsystems/youtube_manager.hxx"
 
 #include <SDL2/SDL_syswm.h>
@@ -84,6 +86,14 @@ void gl::app::engine::run()
 
 		const double deltaSeconds = elapsedMs / 1000.;
 
+		for (auto& object : mObjects)
+		{
+			if (!object->isInitialized())
+				object->init();
+			if (!object->isInitialized())
+				throw std::runtime_error("Object unable to init! Did you forget to call parent init()?");
+		};
+
 		// remove all objects that were marked for removal
 		const auto copyObjectToRemove = mObjectsToRemove;
 		for (auto& obj : copyObjectToRemove)
@@ -97,17 +107,17 @@ void gl::app::engine::run()
 		}
 		mObjectsToRemove.clear();
 
-		for (auto& object : mObjects)
-		{
-			if (!object->isInitialized())
-				object->init();
-			if (!object->isInitialized())
-				throw std::runtime_error("Object unable to init! Did you forget to call parent init()?");
-		};
-
 		pollEvents();
 
-		for (auto& object : mObjects)
+		// copy objects to avoid iterator invalidation
+		std::vector<object*> copyObjects{};
+		copyObjects.reserve(mObjects.size());
+		for (const auto& object : mObjects)
+		{
+			copyObjects.push_back(object.get());
+		}
+
+		for (auto& object : copyObjects)
 		{
 			object->update(deltaSeconds);
 		}
@@ -130,7 +140,7 @@ void gl::app::engine::run()
 		SDL_SetRenderDrawColor(mRenderer, 255, 0, 255, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(mRenderer);
 
-		for (auto& object : mObjects)
+		for (auto& object : copyObjects)
 		{
 			object->draw(mRenderer);
 		}
@@ -228,6 +238,7 @@ void gl::app::engine::createSubsystems()
 	// todo: make sure subsystems are unique
 	createObject<timer_manager>();
 	createObject<youtube_manager>();
+	createObject<chat_ghost_subsystem>();
 }
 
 void gl::app::engine::showObjectInspector()
