@@ -1,7 +1,16 @@
 #include "core/timer_manager.hxx"
 
-gl::app::timer_manager::timer_manager()
+static gl::app::timer_manager* gTimerManager = nullptr;
+
+gl::app::timer_manager* gl::app::timer_manager::get()
 {
+	return gTimerManager;
+}
+
+void gl::app::timer_manager::init()
+{
+	subsystem::init();
+	gTimerManager = this;
 }
 
 void gl::app::timer_manager::update(double delta)
@@ -23,6 +32,10 @@ void gl::app::timer_manager::update(double delta)
 	}
 
 	clearInactive();
+}
+
+void gl::app::timer_manager::draw(SDL_Renderer* renderer)
+{
 }
 
 gl::app::timer_handle gl::app::timer_manager::addTimer(double seconds, timer_callback callback, bool bLoop)

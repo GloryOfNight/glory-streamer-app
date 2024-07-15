@@ -12,6 +12,7 @@
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
 #include <iostream>
+#include <stdexcept>
 #include <thread>
 
 static gl::app::engine* gEngine{nullptr};
@@ -38,8 +39,6 @@ bool gl::app::engine::init()
 	}
 
 	SDL_SetWindowTitle(mWindow, "Glory streamer app");
-
-	mTimerManager = std::unique_ptr<timer_manager>(new timer_manager());
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -108,8 +107,6 @@ void gl::app::engine::run()
 
 		pollEvents();
 
-		mTimerManager->update(deltaSeconds);
-
 		for (auto& object : mObjects)
 		{
 			object->update(deltaSeconds);
@@ -157,8 +154,6 @@ void gl::app::engine::shutdown()
 	{
 		SDL_DestroyTexture(texture);
 	}
-
-	mTimerManager.reset();
 
 	SDL_DestroyRenderer(mRenderer);
 	SDL_DestroyWindow(mWindow);
@@ -231,6 +226,7 @@ void gl::app::engine::pollEvents()
 void gl::app::engine::createSubsystems()
 {
 	// todo: make sure subsystems are unique
+	createObject<timer_manager>();
 	createObject<youtube_manager>();
 }
 

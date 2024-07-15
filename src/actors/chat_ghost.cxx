@@ -30,7 +30,7 @@ gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const s
 gl::app::subscriber_ghost::~subscriber_ghost()
 {
 	auto eng = engine::get();
-	auto timerManager = eng->getTimerManager();
+	auto timerManager = timer_manager::get();
 	timerManager->clearTimer(mUpdateForwardPosTimer);
 	timerManager->clearTimer(mHideMessageTimer);
 	timerManager->clearTimer(mDeathTimer);
@@ -40,10 +40,10 @@ void gl::app::subscriber_ghost::init()
 {
 	actor::init();
 
-	mUpdateForwardPosTimer = engine::get()->getTimerManager()->addTimer(5.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
+	mUpdateForwardPosTimer = timer_manager::get()->addTimer(5.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
-	mDeathTimer = engine::get()->getTimerManager()->addTimer(600.0, std::bind(&subscriber_ghost::destroy, this), false);
+	mDeathTimer = timer_manager::get()->addTimer(600.0, std::bind(&subscriber_ghost::destroy, this), false);
 
 	const auto& ghostBox = getGhostBox();
 	mX = ghostBox.w / 2;
@@ -88,7 +88,7 @@ void gl::app::subscriber_ghost::setMessage(const std::string& message)
 	mGhostMessageFontComponent->setText(message);
 	mGhostMessageFontComponent->setVisible(true);
 
-	auto timerManager = engine::get()->getTimerManager();
+	auto timerManager = timer_manager::get();
 
 	timerManager->clearTimer(mHideMessageTimer);
 	timerManager->resetTimer(mDeathTimer);

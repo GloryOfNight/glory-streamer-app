@@ -11,6 +11,9 @@ namespace gl::app
 	class youtube_manager : public subsystem
 	{
 	public:
+
+		static youtube_manager* get();
+
 		struct subscriber
 		{
 			std::string id{};

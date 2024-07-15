@@ -9,15 +9,25 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
+static gl::app::youtube_manager* gYoutubeManager = nullptr;
+
 static yt::api::auth_info auth{};
 
 static const std::string clientId = "1002066649738-3gfrfvhfdt9q2j3n7vq1ufkdlav603a9.apps.googleusercontent.com";
 static const std::string clientSecret = "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";
 
+gl::app::youtube_manager* gl::app::youtube_manager::get()
+{
+	return gYoutubeManager;
+}
+
 void gl::app::youtube_manager::init()
 {
 	subsystem::init();
-	requestAuth();
+
+	timer_manager::get()->addTimer(0.0, std::bind(&youtube_manager::requestAuth, this), false);
+
+	gYoutubeManager = this;
 }
 
 void gl::app::youtube_manager::update(double delta)
@@ -39,7 +49,7 @@ void gl::app::youtube_manager::update(double delta)
 			auth = authInfo;
 			bAuthSuccess = true;
 
-			auto timerManager = engine::get()->getTimerManager();
+			auto timerManager = timer_manager::get();
 
 			mRefreshAuthTimer = timerManager->addTimer(auth.expiresIn - 15, std::bind(&youtube_manager::requestRefreshAuth, this), false);
 

@@ -1,4 +1,7 @@
 #pragma once
+
+#include "core/subsystem.hxx"
+
 #include <functional>
 #include <vector>
 
@@ -7,13 +10,14 @@ namespace gl::app
 	using timer_handle = uint32_t;
 	using timer_callback = std::function<void()>;
 
-	class timer_manager
+	class timer_manager : public subsystem
 	{
 	public:
-		timer_manager();
-		~timer_manager() = default;
+		static timer_manager* get();
 
-		void update(double delta);
+		void init() override;
+		void update(double delta) override;
+		void draw(SDL_Renderer* renderer) override;
 
 		timer_handle addTimer(double seconds, timer_callback callback, bool bLoop = false);
 

@@ -49,8 +49,6 @@ namespace gl::app
 
 		bool removeObject(object* obj);
 
-		timer_manager* getTimerManager() const { return mTimerManager.get(); }
-
 	private:
 		void pollEvents();
 
@@ -69,8 +67,6 @@ namespace gl::app
 		std::vector<std::unique_ptr<object>> mObjects{};
 
 		std::vector<object*> mObjectsToRemove{};
-
-		std::unique_ptr<timer_manager> mTimerManager{};
 
 		bool bShowObjectInspector{};
 
