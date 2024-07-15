@@ -1,5 +1,12 @@
 #include "core/actor.hxx"
 
+void gl::app::actor::init()
+{
+	object::init();
+	for (auto& comp : mOwnedComponents)
+		comp->init();
+}
+
 void gl::app::actor::update(double delta)
 {
 	for (auto& comp : mOwnedComponents)

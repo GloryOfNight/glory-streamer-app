@@ -17,8 +17,13 @@ namespace gl::app
 		object& operator=(const object&) = delete;
 		object& operator=(object&&) = delete;
 
-		virtual void init() = 0;
+		virtual void init() { bInitialized = true; }; // kinda for future use, maybe
 		virtual void update(double delta) = 0;
 		virtual void draw(SDL_Renderer* renderer) = 0;
+
+		bool isInitialized() const { return bInitialized; }
+
+	private:
+		bool bInitialized = false;
 	};
 } // namespace gl::app

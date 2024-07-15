@@ -15,6 +15,7 @@ namespace gl::app
 		actor() = default;
 		virtual ~actor() = default;
 
+		virtual void init();
 		virtual void update(double delta);
 		virtual void draw(SDL_Renderer* renderer) const;
 

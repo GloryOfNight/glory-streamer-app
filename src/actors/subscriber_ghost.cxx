@@ -38,6 +38,8 @@ gl::app::subscriber_ghost::~subscriber_ghost()
 
 void gl::app::subscriber_ghost::init()
 {
+	actor::init();
+
 	mUpdateForwardPosTimer = engine::get()->getTimerManager()->addTimer(5.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 

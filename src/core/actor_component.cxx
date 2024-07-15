@@ -4,6 +4,7 @@
 
 void gl::app::actor_component::init()
 {
+	object::init();
 }
 
 void gl::app::actor_component::update(double delta)
