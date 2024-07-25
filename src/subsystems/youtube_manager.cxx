@@ -11,8 +11,6 @@
 
 static gl::app::youtube_manager* gYoutubeManager = nullptr;
 
-static yt::api::auth_info auth{};
-
 static const std::string clientId = "1002066649738-3gfrfvhfdt9q2j3n7vq1ufkdlav603a9.apps.googleusercontent.com";
 static const std::string clientSecret = "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";
 

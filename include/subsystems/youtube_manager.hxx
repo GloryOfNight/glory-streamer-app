@@ -86,6 +86,7 @@ namespace gl::app
 		std::string mLiveChatETag{};
 		std::string mLiveChatNextPageToken{};
 
+		yt::api::auth_info auth{};
 		bool bAuthSuccess{};
 	};
 } // namespace gl::app

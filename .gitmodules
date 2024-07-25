@@ -4,21 +4,6 @@
 [submodule "thirdparty/nlohmann_json"]
 	path = thirdparty/nlohmann_json
 	url = https://github.com/nlohmann/json.git
-[submodule "thirdparty/curl"]
-	path = thirdparty/curl
-	url = https://github.com/curl/curl.git
 [submodule "thirdparty/cpp-httplib"]
 	path = thirdparty/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib.git
-[submodule "thirdparty/SDL"]
-	path = thirdparty/SDL
-	url = https://github.com/libsdl-org/SDL.git
-	branch = release-2.30.x
-[submodule "thirdparty/SDL_image"]
-	path = thirdparty/SDL_image
-	url = https://github.com/libsdl-org/SDL_image.git
-	branch = release-2.8.x
-[submodule "thirdparty/SDL_ttf"]
-	path = thirdparty/SDL_ttf
-	url = https://github.com/libsdl-org/SDL_ttf.git
-	branch = release-2.20.x
