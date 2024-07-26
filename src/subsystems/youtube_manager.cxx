@@ -9,10 +9,13 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-static gl::app::youtube_manager* gYoutubeManager = nullptr;
+#if __has_include("secrets/youtube-secret.h")
+#include "secrets/youtube-secret.h"
+#else
+#include "secrets/youtube-secret-template.h"
+#endif
 
-static const std::string clientId = "1002066649738-3gfrfvhfdt9q2j3n7vq1ufkdlav603a9.apps.googleusercontent.com";
-static const std::string clientSecret = "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";
+static gl::app::youtube_manager* gYoutubeManager = nullptr;
 
 gl::app::youtube_manager* gl::app::youtube_manager::get()
 {
@@ -82,7 +85,7 @@ void gl::app::youtube_manager::draw(SDL_Renderer* renderer)
 void gl::app::youtube_manager::requestAuth()
 {
 	std::cout << "Requesting fresh auth" << std::endl;
-	mAuthFuture = std::async(yt::api::initalAuth, clientId, clientSecret);
+	mAuthFuture = std::async(yt::api::initalAuth, yt::secret::clientId, yt::secret::clientSecret);
 }
 
 void gl::app::youtube_manager::requestRefreshAuth()
@@ -94,7 +97,7 @@ void gl::app::youtube_manager::requestRefreshAuth()
 	}
 
 	std::cout << "Requesting refresh of auth" << std::endl;
-	mAuthFuture = std::async(yt::api::refreshAuth, clientId, clientSecret, auth.refreshToken);
+	mAuthFuture = std::async(yt::api::refreshAuth, yt::secret::clientId, yt::secret::clientSecret, auth.refreshToken);
 }
 
 void gl::app::youtube_manager::requestSubs()
@@ -102,7 +105,7 @@ void gl::app::youtube_manager::requestSubs()
 	if (!bAuthSuccess)
 		return;
 
-	const auto listSubscribersRequest = yt::api::live::listSubscribtionsRequest(clientSecret)
+	const auto listSubscribersRequest = yt::api::live::listSubscribtionsRequest(yt::secret::clientSecret)
 											.setParts({"snippet", "subscriberSnippet"})
 											.setFields("etag,nextPageToken,items(id,subscriberSnippet(title,channelId),snippet(publishedAt))")
 											.setMyRecentSubscribers(true)
@@ -162,7 +165,7 @@ void gl::app::youtube_manager::requestBroadcasts()
 	if (!bAuthSuccess)
 		return;
 
-	const auto listLiveBroadcastsRequest = yt::api::live::listLiveBroadcastsRequest(clientSecret)
+	const auto listLiveBroadcastsRequest = yt::api::live::listLiveBroadcastsRequest(yt::secret::clientSecret)
 											   .setParts({"snippet", "status"})
 											   .setFields("etag,nextPageToken,items(id,etag,snippet(title,liveChatId),status(lifeCycleStatus))")
 											   .setBroadcastStatus("all")
@@ -235,7 +238,7 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 	if (liveBroadcast == mBroadcasts.end())
 		return;
 
-	const auto listLiveMessagesRequest = yt::api::live::listLiveChatMessagesRequest(clientSecret)
+	const auto listLiveMessagesRequest = yt::api::live::listLiveChatMessagesRequest(yt::secret::clientSecret)
 											 .setParts({"snippet", "authorDetails"})
 											 .setFields("etag,nextPageToken,pollingIntervalMillis,items(id,etag,snippet(type,publishedAt,displayMessage),authorDetails(channelId,displayName))")
 											 .setNextPageToken(mLiveChatNextPageToken)

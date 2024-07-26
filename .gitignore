@@ -21,3 +21,4 @@ _deps
 build/*
 out/*
 install/*
+src/secrets/youtube-secret.h

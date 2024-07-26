@@ -22,6 +22,7 @@ add_executable(${PROJECT_NAME} "src/main.cxx" "src/api/youtube_api.cxx" "src/cor
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static imgui-static CURL::libcurl_static httplib nlohmann_json)
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 enable_sanitizers(${PROJECT_NAME} 
                     ${ENABLE_SANITIZER_ADDRESS} 
