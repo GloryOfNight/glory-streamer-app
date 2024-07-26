@@ -14,6 +14,8 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(curl REQUIRED)
+find_package(httplib REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 add_subdirectory(thirdparty)
 
@@ -29,7 +31,7 @@ add_library(${PROJECT_NAME}-static STATIC   "src/api/youtube_api.cxx"
                                             "src/subsystems/chat_ghosts_manager.cxx")
 
 
-target_link_libraries(${PROJECT_NAME}-static PUBLIC SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static imgui-static CURL::libcurl_static httplib nlohmann_json)
+target_link_libraries(${PROJECT_NAME}-static PUBLIC SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static imgui-static CURL::libcurl_static httplib::httplib nlohmann_json::nlohmann_json)
 target_include_directories(${PROJECT_NAME}-static PUBLIC include)
 target_include_directories(${PROJECT_NAME}-static PRIVATE src)
 
@@ -45,4 +47,4 @@ enable_sanitizers(${PROJECT_NAME}
                     ${ENABLE_SANITIZER_THREAD} 
                     ${ENABLE_SANITIZER_MEMORY})
 
-install(TARGETS ${PROJECT_NAME})
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-static)
