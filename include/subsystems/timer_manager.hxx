@@ -15,6 +15,9 @@ namespace gl::app
 	public:
 		static timer_manager* get();
 
+		timer_manager() = default;
+		~timer_manager();
+
 		void init() override;
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;

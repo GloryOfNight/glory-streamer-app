@@ -32,9 +32,12 @@ gl::app::subscriber_ghost::~subscriber_ghost()
 {
 	auto eng = engine::get();
 	auto timerManager = timer_manager::get();
-	timerManager->clearTimer(mUpdateForwardPosTimer);
-	timerManager->clearTimer(mHideMessageTimer);
-	timerManager->clearTimer(mDeathTimer);
+	if (timerManager)
+	{
+		timerManager->clearTimer(mUpdateForwardPosTimer);
+		timerManager->clearTimer(mHideMessageTimer);
+		timerManager->clearTimer(mDeathTimer);
+	}
 }
 
 void gl::app::subscriber_ghost::init()

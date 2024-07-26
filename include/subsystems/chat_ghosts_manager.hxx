@@ -9,6 +9,9 @@ namespace gl::app
 	class chat_ghost_subsystem : public subsystem
 	{
 	public:
+		chat_ghost_subsystem() = default;
+		~chat_ghost_subsystem();
+
 		static chat_ghost_subsystem* get();
 
 		void init() override;

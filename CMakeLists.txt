@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21.0)
 
-project(glory-streamer-app
+project(glory-stream-app
         VERSION 0.0
         DESCRIPTION "My application for my streams!"
         HOMEPAGE_URL "https://github.com/GloryOfNight/glory-streamer-app"
@@ -17,12 +17,26 @@ find_package(curl REQUIRED)
 
 add_subdirectory(thirdparty)
 
-add_executable(${PROJECT_NAME} "src/main.cxx" "src/api/youtube_api.cxx" "src/core/engine.cxx" "src/actors/components/sprite_component.cxx" "src/actors/components/font_component.cxx" "src/actors/chat_ghost.cxx" "src/subsystems/youtube_manager.cxx" "src/subsystems/timer_manager.cxx" "src/core/actor.cxx" "src/core/actor_component.cxx" "src/subsystems/chat_ghosts_manager.cxx")
+add_library(${PROJECT_NAME}-static STATIC   "src/api/youtube_api.cxx" 
+                                            "src/core/engine.cxx" 
+                                            "src/actors/components/sprite_component.cxx" 
+                                            "src/actors/components/font_component.cxx" 
+                                            "src/actors/chat_ghost.cxx"
+                                            "src/subsystems/youtube_manager.cxx"
+                                            "src/subsystems/timer_manager.cxx" 
+                                            "src/core/actor.cxx" 
+                                            "src/core/actor_component.cxx" 
+                                            "src/subsystems/chat_ghosts_manager.cxx")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static imgui-static CURL::libcurl_static httplib nlohmann_json)
 
-target_include_directories(${PROJECT_NAME} PUBLIC include)
-target_include_directories(${PROJECT_NAME} PRIVATE src)
+target_link_libraries(${PROJECT_NAME}-static PUBLIC SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static imgui-static CURL::libcurl_static httplib nlohmann_json)
+target_include_directories(${PROJECT_NAME}-static PUBLIC include)
+target_include_directories(${PROJECT_NAME}-static PRIVATE src)
+
+
+add_executable(${PROJECT_NAME} "src/main.cxx")
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-static)
+
 
 enable_sanitizers(${PROJECT_NAME} 
                     ${ENABLE_SANITIZER_ADDRESS} 

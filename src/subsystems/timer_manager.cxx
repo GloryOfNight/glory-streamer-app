@@ -7,6 +7,14 @@ gl::app::timer_manager* gl::app::timer_manager::get()
 	return gTimerManager;
 }
 
+gl::app::timer_manager::~timer_manager()
+{
+	if (gTimerManager == this)
+	{
+		gTimerManager = nullptr;
+	}
+}
+
 void gl::app::timer_manager::init()
 {
 	subsystem::init();

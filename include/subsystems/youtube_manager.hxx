@@ -16,6 +16,9 @@ namespace gl::app
 		delegate<const std::string& /*channelId*/, const std::string& /*displayName*/, const std::string& /*displayMessage*/> onLiveChatMessage;
 
 	public:
+		youtube_manager() = default;
+		~youtube_manager();
+
 		static youtube_manager* get();
 
 		struct subscriber

@@ -17,6 +17,14 @@
 
 static gl::app::youtube_manager* gYoutubeManager = nullptr;
 
+gl::app::youtube_manager::~youtube_manager()
+{
+	if (gYoutubeManager == this)
+	{
+		gYoutubeManager = nullptr;
+	}
+}
+
 gl::app::youtube_manager* gl::app::youtube_manager::get()
 {
 	return gYoutubeManager;

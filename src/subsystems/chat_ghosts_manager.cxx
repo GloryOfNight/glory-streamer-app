@@ -6,6 +6,14 @@
 
 static gl::app::chat_ghost_subsystem* gChatGhostSubsystem = nullptr;
 
+gl::app::chat_ghost_subsystem::~chat_ghost_subsystem()
+{
+	if (gChatGhostSubsystem == this)
+	{
+		gChatGhostSubsystem = nullptr;
+	}
+}
+
 gl::app::chat_ghost_subsystem* gl::app::chat_ghost_subsystem::get()
 {
 	return nullptr;

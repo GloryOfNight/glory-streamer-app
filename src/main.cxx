@@ -8,7 +8,7 @@
 #include <iostream>
 #include <thread>
 
-int main(int argc, char* argv[], char* envp[])
+int main(int argc, char* argv[])
 {
 	SDL_SetMainReady();
 	if (SDL_Init(SDL_INIT_VIDEO))
