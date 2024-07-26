@@ -57,8 +57,8 @@ void gl::app::font_component::draw(SDL_Renderer* renderer)
 		mDstRect.w = textSurf->w;
 		mDstRect.h = textSurf->h;
 
-		SDL_FreeSurface(textOutlineSurf);
-		SDL_FreeSurface(textSurf);
+		SDL_DestroySurface(textOutlineSurf);
+		SDL_DestroySurface(textSurf);
 		bDirty = false;
 	}
 
@@ -68,7 +68,7 @@ void gl::app::font_component::draw(SDL_Renderer* renderer)
 	mDstRect.x -= mDstRect.w / 2;
 	//mDstRect.y -= mDstRect.h / 2;
 
-	SDL_RenderCopy(renderer, mTexture, nullptr, &mDstRect);
+	SDL_RenderTexture(renderer, mTexture, nullptr, &mDstRect);
 }
 
 void gl::app::font_component::setWrapping(uint16_t wrapping)

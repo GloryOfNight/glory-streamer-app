@@ -18,7 +18,7 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		const SDL_Rect& getSrcRect() const { return mSrcRect; }
+		const SDL_FRect& getSrcRect() const { return mSrcRect; }
 
 		void setFlipHorizontal(bool flip);
 
@@ -26,8 +26,8 @@ namespace gl::app
 
 	private:
 		SDL_Texture* mTexture{};
-		SDL_Rect mSrcRect{};
-		SDL_Rect mDstRect{};
+		SDL_FRect mSrcRect{};
+		SDL_FRect mDstRect{};
 
 		double mAngle{0.0};
 

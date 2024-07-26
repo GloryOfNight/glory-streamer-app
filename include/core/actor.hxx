@@ -3,7 +3,7 @@
 #include "core/actor_component.hxx"
 #include "core/object.hxx"
 
-#include <SDL2/SDL_render.h>
+#include <SDL3/SDL_render.h>
 #include <memory>
 #include <vector>
 

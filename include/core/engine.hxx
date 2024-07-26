@@ -2,8 +2,8 @@
 
 #include "core/object.hxx"
 
-#include <SDL2/SDL.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <map>
 #include <memory>
 #include <string>

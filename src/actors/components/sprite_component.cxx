@@ -6,7 +6,7 @@ gl::app::sprite_component::sprite_component(const std::string& texPath)
 {
 	mTexture = engine::get()->LoadTexture(texPath);
 
-	SDL_QueryTexture(mTexture, NULL, NULL, &mSrcRect.w, &mSrcRect.h);
+	SDL_GetTextureSize(mTexture, &mDstRect.w, &mDstRect.h);
 }
 
 void gl::app::sprite_component::setSrcSize(int32_t w, int32_t h)
@@ -29,7 +29,7 @@ void gl::app::sprite_component::draw(SDL_Renderer* renderer)
 {
 	if (mTexture)
 	{
-		SDL_RendererFlip Flip{};
+		SDL_FlipMode Flip{};
 		if (bFlipHorizontal)
 			Flip = SDL_FLIP_HORIZONTAL;
 
@@ -39,8 +39,8 @@ void gl::app::sprite_component::draw(SDL_Renderer* renderer)
 		mDstRect.x -= mDstRect.w / 2;
 		mDstRect.y -= mDstRect.h / 2;
 
-		SDL_Point center = {mDstRect.w / 2, mDstRect.h / 2};
-		SDL_RenderCopyEx(renderer, mTexture, &mSrcRect, &mDstRect, mAngle, &center, Flip);
+		SDL_FPoint center = {mDstRect.w / 2, mDstRect.h / 2};
+		SDL_RenderTextureRotated(renderer, mTexture, &mSrcRect, &mDstRect, mAngle, &center, Flip);
 	}
 }
 

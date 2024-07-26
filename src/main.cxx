@@ -2,15 +2,14 @@
 
 #include "core/engine.hxx"
 
-#include <SDL2/SDL.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <curl/curl.h>
 #include <iostream>
 #include <thread>
 
 int main(int argc, char* argv[])
 {
-	SDL_SetMainReady();
 	if (SDL_Init(SDL_INIT_VIDEO))
 	{
 		std::cerr << "Failed to initialize SDL" << SDL_GetError() << std::endl;
