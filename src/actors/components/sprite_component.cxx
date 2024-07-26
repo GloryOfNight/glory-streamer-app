@@ -6,13 +6,26 @@ gl::app::sprite_component::sprite_component(const std::string& texPath)
 {
 	mTexture = engine::get()->LoadTexture(texPath);
 
-	SDL_QueryTexture(mTexture, NULL, NULL, &mSrcRect.w, &mSrcRect.h);
+	SDL_QueryTexture(mTexture, NULL, NULL, &mWidth, &mHeight);
+
+	mSrcRect.w = mWidth;
+	mSrcRect.h = mHeight;
 }
 
 void gl::app::sprite_component::setSrcSize(int32_t w, int32_t h)
 {
 	mSrcRect.w = w;
 	mSrcRect.h = h;
+}
+
+void gl::app::sprite_component::setAnimSpeed(double speed)
+{
+	mAnimSpeed = speed;
+}
+
+void gl::app::sprite_component::setAnimRepeat(bool repeat)
+{
+	bAnimRepeat = repeat;
 }
 
 void gl::app::sprite_component::setDstSize(int32_t w, int32_t h)
@@ -23,6 +36,31 @@ void gl::app::sprite_component::setDstSize(int32_t w, int32_t h)
 
 void gl::app::sprite_component::update(double delta)
 {
+	if (mAnimSpeed <= 0.0)
+		return;
+
+	mAnimTimer += delta;
+	if (mAnimTimer >= mAnimSpeed)
+	{
+		const uint16_t rows = mHeight / mSrcRect.h;
+		const uint16_t cols = mWidth / mSrcRect.w;
+
+		mSrcRect.x = ((mSrcRect.x / mSrcRect.w) * mSrcRect.w) + mSrcRect.w;
+		if (mSrcRect.x >= mWidth)
+		{
+			mSrcRect.x = 0;
+
+			mSrcRect.y = ((mSrcRect.y / mSrcRect.h) * mSrcRect.h) + mSrcRect.h;
+			if (mSrcRect.y >= mHeight)
+			{
+				mSrcRect.y = 0;
+				if (!bAnimRepeat)
+					mAnimSpeed = 0.0;
+			}
+		}
+
+		mAnimTimer = 0;
+	}
 }
 
 void gl::app::sprite_component::draw(SDL_Renderer* renderer)

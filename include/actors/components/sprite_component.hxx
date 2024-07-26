@@ -24,12 +24,22 @@ namespace gl::app
 
 		void setAngle(double angle);
 
+		void setAnimSpeed(double speed);
+
+		void setAnimRepeat(bool repeat);
+
 	private:
 		SDL_Texture* mTexture{};
+		int32_t mWidth{}, mHeight{};
+
 		SDL_Rect mSrcRect{};
 		SDL_Rect mDstRect{};
 
 		double mAngle{0.0};
+
+		double mAnimSpeed{0.0};
+		double mAnimTimer{0.0};
+		bool bAnimRepeat{true};
 
 		bool bFlipHorizontal{false};
 	};
