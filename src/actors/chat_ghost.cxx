@@ -44,7 +44,7 @@ void gl::app::subscriber_ghost::init()
 {
 	actor::init();
 
-	mUpdateForwardPosTimer = timer_manager::get()->addTimer(5.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
+	mUpdateForwardPosTimer = timer_manager::get()->addTimer(6.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
 	mDeathTimer = timer_manager::get()->addTimer(600.0, std::bind(&subscriber_ghost::destroy, this), false);
@@ -59,6 +59,16 @@ void gl::app::subscriber_ghost::init()
 
 void gl::app::subscriber_ghost::update(double delta)
 {
+	if (mRemainingMoveTime > 0.0)
+	{
+		mRemainingMoveTime -= delta;
+		if (mRemainingMoveTime <= 0.0)
+		{
+			mTargetFwX = 0.0;
+			mTargetFwY = 0.0;
+		}
+	}
+
 	const double rotSpeed = delta;
 	if (mFwX > mTargetFwX)
 	{
@@ -145,8 +155,11 @@ void gl::app::subscriber_ghost::generateNewForwardPos()
 {
 	static std::random_device rd{};
 	static std::mt19937 gen(rd());
-	static std::uniform_real_distribution<double> dis(-1, 1);
+	static std::uniform_real_distribution<double> fwdDis(-1, 1);
+	static std::uniform_real_distribution<double> timeDis(1.5, 10.0);
 
-	mTargetFwX = dis(gen);
-	mTargetFwY = dis(gen);
+	mTargetFwX = fwdDis(gen);
+	mTargetFwY = fwdDis(gen);
+
+	mRemainingMoveTime = timeDis(gen);
 }

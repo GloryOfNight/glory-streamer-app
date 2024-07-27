@@ -51,6 +51,7 @@ namespace gl::app
 		timer_handle mUpdateForwardPosTimer;
 		double mFwX{}, mFwY{}; // forward pos
 		double mTargetFwX{}, mTargetFwY{}; // forward pos
+		double mRemainingMoveTime{0.0};
 
 		timer_handle mDeathTimer;
 
