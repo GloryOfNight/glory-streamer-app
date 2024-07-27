@@ -163,9 +163,10 @@ std::string yt::api::fetch(const std::string url, const std::string accessToken,
 		headers = curl_slist_append(headers, std::string("Authorization: Bearer " + accessToken).c_str());
 		headers = curl_slist_append(headers, "Accept: application/json");
 		if (!eTag.empty())
-		{
 			headers = curl_slist_append(headers, std::string("If-None-Match: " + eTag).c_str());
-		}
+
+		if (curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip") == CURLE_OK)
+			headers = curl_slist_append(headers, "Content-Encoding: gzip");
 
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
@@ -208,6 +209,9 @@ std::string yt::api::post(const std::string url, const std::string accessToken, 
 		headers = curl_slist_append(headers, std::string("Authorization: Bearer " + accessToken).c_str());
 		headers = curl_slist_append(headers, std::string("Accept: application/json").c_str());
 		headers = curl_slist_append(headers, std::string("Content-Type: application/json").c_str());
+
+		if (curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip") == CURLE_OK)
+			headers = curl_slist_append(headers, "Content-Encoding: gzip");
 
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21.0)
 
 project(glory-stream-app
         VERSION 0.0
-        DESCRIPTION "My application for my streams!"
+        DESCRIPTION "Application for my streams!"
         HOMEPAGE_URL "https://github.com/GloryOfNight/glory-streamer-app"
         LANGUAGES CXX C)
 
