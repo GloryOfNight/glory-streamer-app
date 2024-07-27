@@ -40,6 +40,7 @@ namespace gl::app
 
 		const assets::sprite_sheet::animation* mCurrentAnimation{};
 		uint16_t mFrame{};
+		uint16_t mLoopCounter{};
 		double mRemainingDuration{};
 
 		std::string mNextAnimationName{};

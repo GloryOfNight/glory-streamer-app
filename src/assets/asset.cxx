@@ -16,12 +16,23 @@ gl::app::assets::sprite_sheet loadSpriteSheet(const gl::app::assets::asset_heade
 	sheet.offset.x = json["offset"]["x"];
 	sheet.offset.y = json["offset"]["y"];
 
+	if (json.contains("defaultAnimation"))
+		sheet.defaultAnimation = json["defaultAnimation"];
+	;
+
 	for (const auto& animationJson : json["animations"])
 	{
 		auto& anim = sheet.animations.emplace_back(sprite_sheet::animation());
 		anim.name = animationJson["name"];
-		anim.bLoop = animationJson["loop"];
-		anim.bFinishBeforeTransition = animationJson["finishBeforeTransition"];
+
+		if (animationJson.contains("repeats"))
+			anim.repeats = animationJson["repeats"];
+
+		if (animationJson.contains("allowInterrupt"))
+			anim.bAllowInterrupt = animationJson["allowInterrupt"];
+
+		if (animationJson.contains("next"))
+			anim.next = animationJson["next"];
 
 		for (const auto& frameJson : animationJson["frames"])
 		{

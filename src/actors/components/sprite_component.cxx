@@ -13,8 +13,11 @@ gl::app::sprite_component::sprite_component(const std::string& spriteSheetAssetJ
 
 	SDL_QueryTexture(mTexture, NULL, NULL, &mWidth, &mHeight);
 
-	mSrcRect.w = mSpriteSheet.size.w;
-	mSrcRect.h = mSpriteSheet.size.h;
+	setSrcSize(mSpriteSheet.size.w, mSpriteSheet.size.h);
+	setDstSize(mSpriteSheet.size.w, mSpriteSheet.size.h);
+
+	if (!mSpriteSheet.defaultAnimation.empty())
+		setNextAnimation(mSpriteSheet.defaultAnimation);
 }
 
 void gl::app::sprite_component::setSrcSize(int32_t w, int32_t h)
@@ -31,10 +34,17 @@ void gl::app::sprite_component::setDstSize(int32_t w, int32_t h)
 
 void gl::app::sprite_component::update(double delta)
 {
-	const uint16_t rows = mHeight / mSrcRect.h;
-	const uint16_t cols = mWidth / mSrcRect.w;
+	const auto setFrameImageLam = [this](const assets::sprite_sheet::animation::frame& frame)
+	{
+		const uint16_t rows = mHeight / mSrcRect.h;
+		const uint16_t cols = mWidth / mSrcRect.w;
 
-	if (mCurrentAnimation == nullptr || mCurrentAnimation->bFinishBeforeTransition == false || mFrame == 0)
+		mSrcRect.x = (frame.index % cols) * mSrcRect.w;
+		mSrcRect.y = (frame.index / cols) * mSrcRect.h;
+		mRemainingDuration = frame.duration;
+	};
+
+	if (mCurrentAnimation == nullptr || mCurrentAnimation->bAllowInterrupt == true || mFrame == 0)
 	{
 		const auto pred = [&name = mNextAnimationName](const assets::sprite_sheet::animation& anim)
 		{ return anim.name == name; };
@@ -45,12 +55,9 @@ void gl::app::sprite_component::update(double delta)
 		{
 			mCurrentAnimation = &(*findAnim);
 			mFrame = 0;
+			mLoopCounter = 0;
 
-			const auto currentFrame = &mCurrentAnimation->frames[mFrame];
-
-			mRemainingDuration = currentFrame->duration;
-			mSrcRect.x = (currentFrame->index * mSrcRect.w) % mWidth;
-			mSrcRect.y = (currentFrame->index * mSrcRect.h) % mHeight;
+			setFrameImageLam(mCurrentAnimation->frames[mFrame]);
 		}
 		mNextAnimationName = "";
 	}
@@ -63,24 +70,26 @@ void gl::app::sprite_component::update(double delta)
 			if (mFrame + 1 < mCurrentAnimation->frames.size())
 			{
 				mFrame++;
+				setFrameImageLam(mCurrentAnimation->frames[mFrame]);
 			}
 			else
 			{
-				if (mCurrentAnimation->bLoop)
+				mFrame = 0;
+				setFrameImageLam(mCurrentAnimation->frames[mFrame]);
+
+				if (mLoopCounter < mCurrentAnimation->repeats)
 				{
-					mFrame = 0;
+					++mLoopCounter;
 				}
-				else
+				else if (mCurrentAnimation->repeats != 0)
 				{
+					if (mNextAnimationName.empty())
+						setNextAnimation(mCurrentAnimation->next);
+
 					mCurrentAnimation = nullptr;
-					mFrame = 0;
+					mLoopCounter = 0;
 				}
 			}
-
-			const auto currentFrame = &mCurrentAnimation->frames[mFrame];
-			mRemainingDuration = currentFrame->duration;
-			mSrcRect.x = (currentFrame->index * mSrcRect.w) % mWidth;
-			mSrcRect.y = (currentFrame->index * mSrcRect.h) % mHeight;
 		}
 	}
 }

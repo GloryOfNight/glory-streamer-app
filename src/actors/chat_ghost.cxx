@@ -20,10 +20,8 @@ gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const s
 	, mSubChannelId(subId)
 {
 	mSpriteComponent = addComponent<sprite_component>("assets/ghost_sprite.json");
-	mGhostTitleFontComponent = addComponent<font_component>("assets/fonts/Buran USSR.ttf", 16);
-	mGhostMessageFontComponent = addComponent<font_component>("assets/fonts/Arsenal-BoldItalic.ttf", 18);
-
-	mSpriteComponent->setNextAnimation("idle");
+	mGhostTitleFontComponent = addComponent<font_component>("assets/fonts/Arsenal-Bold.ttf", 18);
+	mGhostMessageFontComponent = addComponent<font_component>("assets/fonts/Arsenal-BoldItalic.ttf", 16);
 
 	mGhostTitleFontComponent->setText(mSubTitle);
 	mGhostTitleFontComponent->setWrapping(360);
@@ -55,9 +53,8 @@ void gl::app::subscriber_ghost::init()
 	mX = ghostBox.w / 2;
 	mY = ghostBox.h / 2;
 
-	mSpriteComponent->setDstSize(64, 64);
-	mGhostTitleFontComponent->setPos(0, -48);
-	mGhostMessageFontComponent->setPos(0, 32);
+	mGhostTitleFontComponent->setPos(0, -40);
+	mGhostMessageFontComponent->setPos(0, 20);
 }
 
 void gl::app::subscriber_ghost::update(double delta)
@@ -115,6 +112,12 @@ void gl::app::subscriber_ghost::setSpeed(double speed)
 
 void gl::app::subscriber_ghost::setMessage(const std::string& message)
 {
+	if (message == "!flip")
+	{
+		mSpriteComponent->setNextAnimation("flip");
+		return;
+	}
+
 	mGhostMessageFontComponent->setText(message);
 	mGhostMessageFontComponent->setVisible(true);
 
@@ -124,6 +127,8 @@ void gl::app::subscriber_ghost::setMessage(const std::string& message)
 	timerManager->resetTimer(mDeathTimer);
 
 	mHideMessageTimer = timerManager->addTimer(12.0, std::bind(&subscriber_ghost::showMessage, this, false), false);
+
+	mSpriteComponent->setNextAnimation("talk");
 }
 
 void gl::app::subscriber_ghost::showMessage(bool bShow)

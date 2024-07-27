@@ -15,33 +15,34 @@ namespace gl::app::assets
 		{
 		}
 
-		std::string resourcePath;
+		std::string resourcePath{};
 		struct
 		{
-			uint16_t w;
-			uint16_t h;
-		} size;
+			uint16_t w{};
+			uint16_t h{};
+		} size{};
 		struct
 		{
-			int32_t x;
-			int32_t y;
-		} offset;
+			int32_t x{};
+			int32_t y{};
+		} offset{};
 
 		struct animation
 		{
-			std::string name;
-			bool bLoop;
-			bool bFinishBeforeTransition;
-
+			std::string name{};
+			std::string next{};
+			uint16_t repeats{};
+			bool bAllowInterrupt{false};
 			struct frame
 			{
 				uint32_t index;
 				double duration;
 			};
 
-			std::vector<frame> frames;
+			std::vector<frame> frames{};
 		};
 
+		std::string defaultAnimation{};
 		std::vector<animation> animations;
 	};
 
