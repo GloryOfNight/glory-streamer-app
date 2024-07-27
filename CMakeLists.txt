@@ -27,6 +27,7 @@ add_library(${PROJECT_NAME}-static STATIC   "src/assets/asset.cxx"
                                             "src/actors/chat_ghost.cxx"
                                             "src/subsystems/youtube_manager.cxx"
                                             "src/subsystems/timer_manager.cxx" 
+                                            "src/core/object.cxx" 
                                             "src/core/actor.cxx" 
                                             "src/core/actor_component.cxx" 
                                             "src/subsystems/chat_ghosts_manager.cxx")

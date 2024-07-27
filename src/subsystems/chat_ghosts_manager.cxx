@@ -41,17 +41,17 @@ void gl::app::chat_ghost_subsystem::onLiveChatMessage(const std::string& channel
 	const auto& objects = engine::get()->getObjects();
 	const auto iter = std::find_if(objects.begin(), objects.end(), [&channelId](const std::unique_ptr<object>& obj)
 		{ 
-							const auto ghost = dynamic_cast<const subscriber_ghost*>(obj.get());
+							const auto ghost = dynamic_cast<const chat_ghost*>(obj.get());
 							return ghost && ghost->getChannelId() == channelId; });
 
 	if (iter == objects.end())
 	{
-		auto ghost = engine::get()->createObject<subscriber_ghost>(displayName, channelId);
+		auto ghost = engine::get()->createObject<chat_ghost>(displayName, channelId);
 		ghost->setMessage(displayMessage);
 	}
 	else
 	{
-		auto ghost = dynamic_cast<subscriber_ghost*>(iter->get());
+		auto ghost = dynamic_cast<chat_ghost*>(iter->get());
 		ghost->setSpeed(ghost->getSpeed() + 1);
 		ghost->setMessage(displayMessage);
 	}

@@ -7,13 +7,13 @@
 #include <cmath>
 #include <random>
 
-gl::app::ghost_box& gl::app::subscriber_ghost::getGhostBox()
+gl::app::ghost_box& gl::app::chat_ghost::getGhostBox()
 {
 	static ghost_box ghostBox{0, 0, 2560, 1440};
 	return ghostBox;
 }
 
-gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const std::string& subId)
+gl::app::chat_ghost::chat_ghost(const std::string& subTitle, const std::string& subId)
 	: mSpriteComponent{}
 	, mGhostTitleFontComponent{}
 	, mSubTitle(subTitle)
@@ -28,7 +28,7 @@ gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const s
 	mGhostMessageFontComponent->setWrapping(360);
 }
 
-gl::app::subscriber_ghost::~subscriber_ghost()
+gl::app::chat_ghost::~chat_ghost()
 {
 	auto eng = engine::get();
 	auto timerManager = timer_manager::get();
@@ -40,14 +40,14 @@ gl::app::subscriber_ghost::~subscriber_ghost()
 	}
 }
 
-void gl::app::subscriber_ghost::init()
+void gl::app::chat_ghost::init()
 {
 	actor::init();
 
-	mUpdateForwardPosTimer = timer_manager::get()->addTimer(6.0, std::bind(&subscriber_ghost::generateNewForwardPos, this), true);
+	mUpdateForwardPosTimer = timer_manager::get()->addTimer(6.0, std::bind(&chat_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
-	mDeathTimer = timer_manager::get()->addTimer(600.0, std::bind(&subscriber_ghost::destroy, this), false);
+	mDeathTimer = timer_manager::get()->addTimer(600.0, std::bind(&chat_ghost::destroy, this), false);
 
 	const auto& ghostBox = getGhostBox();
 	mX = ghostBox.w / 2;
@@ -57,7 +57,7 @@ void gl::app::subscriber_ghost::init()
 	mGhostMessageFontComponent->setPos(0, 20);
 }
 
-void gl::app::subscriber_ghost::update(double delta)
+void gl::app::chat_ghost::update(double delta)
 {
 	if (mRemainingMoveTime > 0.0)
 	{
@@ -110,17 +110,17 @@ void gl::app::subscriber_ghost::update(double delta)
 	actor::update(delta);
 }
 
-void gl::app::subscriber_ghost::draw(SDL_Renderer* renderer)
+void gl::app::chat_ghost::draw(SDL_Renderer* renderer)
 {
 	actor::draw(renderer);
 }
 
-void gl::app::subscriber_ghost::setSpeed(double speed)
+void gl::app::chat_ghost::setSpeed(double speed)
 {
 	mSpeed = speed;
 }
 
-void gl::app::subscriber_ghost::setMessage(const std::string& message)
+void gl::app::chat_ghost::setMessage(const std::string& message)
 {
 	if (message == "!flip")
 	{
@@ -136,22 +136,22 @@ void gl::app::subscriber_ghost::setMessage(const std::string& message)
 	timerManager->clearTimer(mHideMessageTimer);
 	timerManager->resetTimer(mDeathTimer);
 
-	mHideMessageTimer = timerManager->addTimer(12.0, std::bind(&subscriber_ghost::showMessage, this, false), false);
+	mHideMessageTimer = timerManager->addTimer(12.0, std::bind(&chat_ghost::showMessage, this, false), false);
 
 	mSpriteComponent->setNextAnimation("talk");
 }
 
-void gl::app::subscriber_ghost::showMessage(bool bShow)
+void gl::app::chat_ghost::showMessage(bool bShow)
 {
 	mGhostMessageFontComponent->setVisible(bShow);
 }
 
-void gl::app::subscriber_ghost::destroy()
+void gl::app::chat_ghost::destroy()
 {
 	engine::get()->removeObject(this);
 }
 
-void gl::app::subscriber_ghost::generateNewForwardPos()
+void gl::app::chat_ghost::generateNewForwardPos()
 {
 	static std::random_device rd{};
 	static std::mt19937 gen(rd());

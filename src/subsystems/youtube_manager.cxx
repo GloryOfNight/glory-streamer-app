@@ -2,6 +2,7 @@
 
 #include "actors/chat_ghost.hxx"
 #include "core/engine.hxx"
+#include "core/log.hxx"
 
 #include <format>
 #include <future>
@@ -48,12 +49,12 @@ void gl::app::youtube_manager::update(double delta)
 
 		if (!bAuthed)
 		{
-			std::cerr << "Failed to authenticate." << std::endl;
+			LOG(Error, "Failed to authenticate. Reattempting.");
 			requestAuth();
 		}
 		else
 		{
-			std::cout << "Authenticated" << std::endl;
+			LOG(Display, "User authenticated");
 
 			auth = authInfo;
 			bAuthSuccess = true;
@@ -92,7 +93,7 @@ void gl::app::youtube_manager::draw(SDL_Renderer* renderer)
 
 void gl::app::youtube_manager::requestAuth()
 {
-	std::cout << "Requesting fresh auth" << std::endl;
+	LOG(Display, "Requesting fresh auth");
 	mAuthFuture = std::async(yt::api::initalAuth, yt::secret::clientId, yt::secret::clientSecret);
 }
 
@@ -100,11 +101,11 @@ void gl::app::youtube_manager::requestRefreshAuth()
 {
 	if (!bAuthSuccess)
 	{
-		std::cerr << "Failed to refresh auth, not authenticated." << std::endl;
+		LOG(Error, "Failed to refresh auth, not authenticated.");
 		return;
 	}
 
-	std::cout << "Requesting refresh of auth" << std::endl;
+	LOG(Display, "Requesting refresh of auth");
 	mAuthFuture = std::async(yt::api::refreshAuth, yt::secret::clientId, yt::secret::clientSecret, auth.refreshToken);
 }
 
@@ -161,7 +162,7 @@ void gl::app::youtube_manager::processSubs()
 
 					const auto& newSubscriber = mRecentSubs.emplace_back(std::move(val));
 
-					std::cout << std::format("Subscriber - \"{0}\" ({1}) at \'{2}\'", newSubscriber.title, newSubscriber.channelId, newSubscriber.publishedAt) << std::endl;
+					LOG(Display, "Subscriber - \"{0}\" ({1}) at \'{2}\'", newSubscriber.title, newSubscriber.channelId, newSubscriber.publishedAt);
 				}
 			}
 		}
@@ -223,12 +224,12 @@ void gl::app::youtube_manager::processBroadcasts()
 
 					const auto& newBroadcast = mBroadcasts.emplace_back(std::move(val));
 
-					std::cout << std::format("Found new broadcast - \"{0}\" in status \'{1}\'", newBroadcast.id, newBroadcast.lifeCycleStatus) << std::endl;
+					LOG(Display, "Found new broadcast - \"{0}\" in status \'{1}\'", newBroadcast.id, newBroadcast.lifeCycleStatus);
 				}
 				else if (iter->lifeCycleStatus != liveCycleStatus)
 				{
 					iter->lifeCycleStatus = liveCycleStatus;
-					std::cout << std::format("Updated broadcast - \"{0}\" new status \'{1}\'", iter->id, iter->lifeCycleStatus) << std::endl;
+					LOG(Display, "Updated broadcast - \"{0}\" new status \'{1}\'", iter->id, iter->lifeCycleStatus);
 				}
 			}
 		}
@@ -309,7 +310,7 @@ void gl::app::youtube_manager::processLiveChatMessages()
 
 					const auto& newLiveMessage = mLiveChat.emplace_back(std::move(val));
 
-					std::cout << std::format("New message: {0} - {1}", newLiveMessage.displayName, newLiveMessage.displayMessage) << std::endl;
+					LOG(Display, "New message: {0} - {1}", newLiveMessage.displayName, newLiveMessage.displayMessage);
 
 					onLiveChatMessage.execute(newLiveMessage.channelId, newLiveMessage.displayName, newLiveMessage.displayMessage);
 				}

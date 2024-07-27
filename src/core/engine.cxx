@@ -274,13 +274,13 @@ void gl::app::engine::showObjectInspector()
 
 	if (ImGui::Button("Spawn ghost"))
 	{
-		auto newGhost = createObject<subscriber_ghost>(newGhostName, std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+		auto newGhost = createObject<chat_ghost>(newGhostName, std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
 		newGhost->setSpeed(newGhostSpeed);
 	}
 
 	ImGui::Separator();
 
-	auto& ghostBox = subscriber_ghost::getGhostBox();
+	auto& ghostBox = chat_ghost::getGhostBox();
 
 	ImGui::Text("Ghost box limits");
 	float limitHorz[2] = {static_cast<float>(ghostBox.x), static_cast<float>(ghostBox.w)};
@@ -308,7 +308,7 @@ void gl::app::engine::showObjectInspector()
 
 	for (auto& object : mObjects)
 	{
-		auto ghost = dynamic_cast<subscriber_ghost*>(object.get());
+		auto ghost = dynamic_cast<chat_ghost*>(object.get());
 
 		if (ghost)
 		{

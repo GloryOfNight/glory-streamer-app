@@ -13,13 +13,13 @@ namespace gl::app
 		double w{}, h{};
 	};
 
-	class subscriber_ghost : public actor
+	class chat_ghost : public actor
 	{
 	public:
 		static ghost_box& getGhostBox();
 
-		subscriber_ghost(const std::string& subTitle, const std::string& subId);
-		~subscriber_ghost();
+		chat_ghost(const std::string& subTitle, const std::string& subId);
+		~chat_ghost();
 
 		void init() override;
 		void update(double delta) override;
@@ -49,7 +49,7 @@ namespace gl::app
 		std::string mSubChannelId;
 
 		timer_handle mUpdateForwardPosTimer;
-		double mFwX{}, mFwY{}; // forward pos
+		double mFwX{}, mFwY{};			   // forward pos
 		double mTargetFwX{}, mTargetFwY{}; // forward pos
 		double mRemainingMoveTime{0.0};
 

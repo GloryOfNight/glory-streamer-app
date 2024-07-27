@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL_render.h>
 #include <memory>
+#include <typeinfo>
 #include <vector>
 
 namespace gl::app
@@ -9,7 +10,7 @@ namespace gl::app
 	class object
 	{
 	public:
-		object() = default;
+		object();
 		object(const object&) = delete;
 		object(object&&) = delete;
 		virtual ~object() = default;
@@ -17,13 +18,13 @@ namespace gl::app
 		object& operator=(const object&) = delete;
 		object& operator=(object&&) = delete;
 
-		virtual void init() { bInitialized = true; }; // kinda for future use, maybe
+		virtual void init(); // kinda for future use, maybe
 		virtual void update(double delta) = 0;
 		virtual void draw(SDL_Renderer* renderer) = 0;
 
 		bool isInitialized() const { return bInitialized; }
 
 	private:
-		bool bInitialized = false;
+		bool bInitialized;
 	};
 } // namespace gl::app
