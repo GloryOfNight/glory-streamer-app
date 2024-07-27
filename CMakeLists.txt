@@ -13,7 +13,7 @@ include(cmake/PreventInSourceBuilds.cmake)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
-find_package(curl REQUIRED)
+find_package(curl REQUIRED COMPONENTS https)
 find_package(httplib REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
