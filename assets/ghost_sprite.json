@@ -1,0 +1,31 @@
+{
+  "type": "sprite_sheet",
+  "version": 0,
+  "name": "misachi animated ghost",
+  "resourcePath": "assets/sprites/ghost/misachi_ghost_anim.png",
+  "size": {
+    "w": 50,
+    "h": 50
+  },
+  "offset": {
+    "x": 0,
+    "y": 0
+  },
+  "animations": [
+    {
+      "name": "idle",
+      "loop": true,
+      "finishBeforeTransition": true,
+      "frames": [
+        {
+          "index": 0,
+          "duration": 0.33
+        },
+        {
+          "index": 1,
+          "duration": 0.66
+        }
+      ]
+    }
+  ]
+}

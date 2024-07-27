@@ -1,6 +1,8 @@
 ﻿#include "core/engine.hxx"
 
 #include "actors/chat_ghost.hxx"
+#include "assets/sprite_asset.hxx"
+#include "core/engine.hxx"
 #include "subsystems/chat_ghosts_manager.hxx"
 #include "subsystems/timer_manager.hxx"
 #include "subsystems/youtube_manager.hxx"
@@ -206,6 +208,23 @@ bool gl::app::engine::removeObject(object* obj)
 		mObjectsToRemove.push_back(obj);
 	}
 	return bFind;
+}
+
+const gl::app::assets::asset_header* gl::app::engine::loadAsset(const std::string& assetJsonPath)
+{
+	const auto findIter = mAssets.find(assetJsonPath);
+	if (findIter != mAssets.end())
+	{
+		return findIter->second.get();
+	}
+
+	auto newAsset = assets::loadAssetJson(assetJsonPath);
+	if (newAsset && newAsset->type != assets::eAssetType::Unknown)
+	{
+		const auto& newPair = mAssets.emplace(assetJsonPath, std::move(newAsset));
+		return newPair.first->second.get();
+	}
+	return nullptr;
 }
 
 void gl::app::engine::pollEvents()

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assets/asset.hxx"
 #include "core/object.hxx"
 
 #include <SDL2/SDL.h>
@@ -46,6 +47,8 @@ namespace gl::app
 
 		bool removeObject(object* obj);
 
+		const assets::asset_header* loadAsset(const std::string& assetJsonPath);
+
 	private:
 		void pollEvents();
 
@@ -62,6 +65,8 @@ namespace gl::app
 		std::map<std::string, SDL_Texture*> mTextures{};
 
 		std::vector<std::unique_ptr<object>> mObjects{};
+
+		std::map<std::string, std::unique_ptr<assets::asset_header>> mAssets{};
 
 		std::vector<object*> mObjectsToRemove{};
 

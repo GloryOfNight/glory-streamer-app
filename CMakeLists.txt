@@ -19,7 +19,8 @@ find_package(nlohmann_json REQUIRED)
 
 add_subdirectory(thirdparty)
 
-add_library(${PROJECT_NAME}-static STATIC   "src/api/youtube_api.cxx" 
+add_library(${PROJECT_NAME}-static STATIC   "src/assets/asset.cxx"
+                                            "src/api/youtube_api.cxx" 
                                             "src/core/engine.cxx" 
                                             "src/actors/components/sprite_component.cxx" 
                                             "src/actors/components/font_component.cxx" 

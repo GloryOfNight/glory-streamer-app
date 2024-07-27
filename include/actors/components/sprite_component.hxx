@@ -1,5 +1,6 @@
 #pragma once
 
+#include "assets/sprite_asset.hxx"
 #include "core/actor_component.hxx"
 
 #include <string>
@@ -9,7 +10,7 @@ namespace gl::app
 	class sprite_component : public actor_component
 	{
 	public:
-		sprite_component(const std::string& texPath);
+		sprite_component(const std::string& spriteSheetAssetJson);
 
 		void setSrcSize(int32_t w, int32_t h);
 
@@ -24,11 +25,11 @@ namespace gl::app
 
 		void setAngle(double angle);
 
-		void setAnimSpeed(double speed);
-
-		void setAnimRepeat(bool repeat);
+		void setNextAnimation(const std::string& name);
 
 	private:
+		assets::sprite_sheet mSpriteSheet{};
+
 		SDL_Texture* mTexture{};
 		int32_t mWidth{}, mHeight{};
 
@@ -37,9 +38,11 @@ namespace gl::app
 
 		double mAngle{0.0};
 
-		double mAnimSpeed{0.0};
-		double mAnimTimer{0.0};
-		bool bAnimRepeat{true};
+		const assets::sprite_sheet::animation* mCurrentAnimation{};
+		uint16_t mFrame{};
+		double mRemainingDuration{};
+
+		std::string mNextAnimationName{};
 
 		bool bFlipHorizontal{false};
 	};

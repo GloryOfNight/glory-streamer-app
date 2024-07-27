@@ -19,13 +19,11 @@ gl::app::subscriber_ghost::subscriber_ghost(const std::string& subTitle, const s
 	, mSubTitle(subTitle)
 	, mSubChannelId(subId)
 {
-	mSpriteComponent = addComponent<sprite_component>("assets/sprites/ghost/misachi_ghost_anim.png");
+	mSpriteComponent = addComponent<sprite_component>("assets/ghost_sprite.json");
 	mGhostTitleFontComponent = addComponent<font_component>("assets/fonts/Buran USSR.ttf", 16);
 	mGhostMessageFontComponent = addComponent<font_component>("assets/fonts/Arsenal-BoldItalic.ttf", 18);
 
-	mSpriteComponent->setSrcSize(50, 50);
-	mSpriteComponent->setAnimSpeed(0.33);
-	mSpriteComponent->setAnimRepeat(true);
+	mSpriteComponent->setNextAnimation("idle");
 
 	mGhostTitleFontComponent->setText(mSubTitle);
 	mGhostTitleFontComponent->setWrapping(360);
