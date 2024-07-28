@@ -20,12 +20,8 @@ gl::app::chat_ghost::chat_ghost(const std::string& subTitle, const std::string& 
 	, mSubChannelId(subId)
 {
 	mSpriteComponent = addComponent<sprite_component>("assets/ghost_sprite.json");
-	mGhostTitleFontComponent = addComponent<font_component>("assets/fonts/Arsenal-Bold.ttf", 18);
-	mGhostMessageFontComponent = addComponent<font_component>("assets/fonts/Arsenal-BoldItalic.ttf", 16);
-
-	mGhostTitleFontComponent->setText(mSubTitle);
-	mGhostTitleFontComponent->setWrapping(360);
-	mGhostMessageFontComponent->setWrapping(360);
+	mGhostTitleFontComponent = addComponent<font_component>("assets/fonts/Arsenal-Bold.ttf", 22);
+	mGhostMessageFontComponent = addComponent<font_component>("assets/fonts/Arsenal-BoldItalic.ttf", 20);
 }
 
 gl::app::chat_ghost::~chat_ghost()
@@ -53,8 +49,14 @@ void gl::app::chat_ghost::init()
 	mX = ghostBox.w / 2;
 	mY = ghostBox.h / 2;
 
-	mGhostTitleFontComponent->setPos(0, -40);
-	mGhostMessageFontComponent->setPos(0, 20);
+	mSpriteComponent->setDstSize(60, 60);
+
+	mGhostTitleFontComponent->setText(mSubTitle);
+	mGhostTitleFontComponent->setWrapping(360);
+	mGhostTitleFontComponent->setPos(0, -50);
+
+	mGhostMessageFontComponent->setWrapping(360);
+	mGhostMessageFontComponent->setPos(0, 24);
 }
 
 void gl::app::chat_ghost::update(double delta)
