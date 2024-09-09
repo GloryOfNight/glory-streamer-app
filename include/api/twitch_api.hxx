@@ -2,6 +2,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace ttv::api
 {
@@ -9,7 +10,8 @@ namespace ttv::api
 	{
 		std::string accessToken{};
 		int32_t expiresIn{};
-		std::string scope{};
+		std::string refreshToken{};
+		std::vector<std::string> scope{};
 		std::string tokenType{};
 	};
 
