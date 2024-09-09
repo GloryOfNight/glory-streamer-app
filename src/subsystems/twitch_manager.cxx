@@ -3,6 +3,9 @@
 #include "api/twitch_api.hxx"
 #include "core/log.hxx"
 #include "secrets/twitch-secret.h"
+#include "subsystems/timer_manager.hxx"
+
+#include <nlohmann/json.hpp>
 
 gl::app::twitch_manager* gTwitchManager{nullptr};
 
@@ -25,7 +28,7 @@ void gl::app::twitch_manager::init()
 
 	gTwitchManager = this;
 
-	requestAuth();
+	timer_manager::get()->addTimer(0.0, std::bind(&twitch_manager::requestAuth, this), false);
 }
 
 void gl::app::twitch_manager::update(double delta)
@@ -46,6 +49,49 @@ void gl::app::twitch_manager::update(double delta)
 			bAuthSuccess = true;
 
 			LOG(Display, "Authenticated with Twitch.");
+
+			requestUser();
+		}
+	}
+
+	if (mUserFuture.valid() && mUserFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+	{
+		const std::string userResponse = mUserFuture.get();
+		mUserFuture = {};
+
+		const auto userResponseJson = nlohmann::json::parse(userResponse);
+
+		if (userResponseJson.contains("error"))
+		{
+			LOG(Error, "Failed to fetch user.");
+		}
+		else
+		{
+			mUserId = userResponseJson["data"][0]["id"];
+			mUserLogin = userResponseJson["data"][0]["login"];
+			mUserDisplayName = userResponseJson["data"][0]["display_name"];
+
+			requestChatters();
+		}
+	}
+
+	if (mChattersFuture.valid() && mChattersFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+	{
+		const std::string chatters = mChattersFuture.get();
+		mChattersFuture = {};
+
+		const auto chattersJson = nlohmann::json::parse(chatters);
+		if (chattersJson.contains("error"))
+		{
+			LOG(Error, "Failed to fetch chatters.");
+		}
+		else
+		{
+			for (const auto& chatter : chattersJson["data"])
+			{
+				onChatterReceived.execute(chatter["user_id"], chatter["user_login"], chatter["user_name"]);
+			}
+			timer_manager::get()->addTimer(60.0, std::bind(&twitch_manager::requestChatters, this), false);
 		}
 	}
 }
@@ -57,4 +103,30 @@ void gl::app::twitch_manager::draw(SDL_Renderer* renderer)
 void gl::app::twitch_manager::requestAuth()
 {
 	mAuthFuture = std::async(ttv::api::initialAuth, ttv::secret::clientId, ttv::secret::clientSecret);
+}
+
+void gl::app::twitch_manager::requestUser()
+{
+	if (!bAuthSuccess)
+	{
+		LOG(Error, "Cannot request user without authentication.");
+		return;
+	}
+
+	const ttv::api::ListUsers request = ttv::api::ListUsers();
+
+	mUserFuture = std::async(ttv::api::fetch, request.url, mAuth.accessToken, ttv::secret::clientId);
+}
+
+void gl::app::twitch_manager::requestChatters()
+{
+	if (!bAuthSuccess)
+	{
+		LOG(Error, "Cannot request chatters without authentication.");
+		return;
+	}
+
+	const ttv::api::ListChattersRequest request = ttv::api::ListChattersRequest(mUserId, mUserId);
+
+	mChattersFuture = std::async(ttv::api::fetch, request.url, mAuth.accessToken, ttv::secret::clientId);
 }

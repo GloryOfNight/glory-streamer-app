@@ -20,6 +20,10 @@ gl::app::chat_ghost::chat_ghost(const std::string& subTitle, const std::string& 
 	, mSubChannelId(subId)
 {
 	mSpriteComponent = addComponent<sprite_component>("assets/ghost_sprite.json");
+
+	mPlatformLogoSprite = addComponent<sprite_component>("assets/twitch_sprite.json");
+	mPlatformLogoSprite->setVisible(false);
+
 	mGhostTitleFontComponent = addComponent<font_component>("assets/fonts/Arsenal-Bold.ttf", 22);
 	mGhostMessageFontComponent = addComponent<font_component>("assets/fonts/Arsenal-BoldItalic.ttf", 20);
 }
@@ -50,6 +54,8 @@ void gl::app::chat_ghost::init()
 	mY = ghostBox.h / 2;
 
 	mSpriteComponent->setDstSize(60, 60);
+
+	mPlatformLogoSprite->setDstSize(20, 20);
 
 	mGhostTitleFontComponent->setText(mSubTitle);
 	mGhostTitleFontComponent->setWrapping(360);
@@ -108,6 +114,8 @@ void gl::app::chat_ghost::update(double delta)
 	if (mX == ghostBox.x || mX == ghostBox.w || mY == ghostBox.y || mY == ghostBox.h)
 		generateNewForwardPos();
 
+	mPlatformLogoSprite->setPos(mGhostTitleFontComponent->getDstRect().w / 2 + 16, -34);
+
 	mSpriteComponent->setFlipHorizontal(mFwX < 0);
 	actor::update(delta);
 }
@@ -151,6 +159,11 @@ void gl::app::chat_ghost::showMessage(bool bShow)
 void gl::app::chat_ghost::destroy()
 {
 	engine::get()->removeObject(this);
+}
+
+void gl::app::chat_ghost::setPlatformLogoVisible(bool bVisible)
+{
+	mPlatformLogoSprite->setVisible(bVisible);
 }
 
 void gl::app::chat_ghost::generateNewForwardPos()

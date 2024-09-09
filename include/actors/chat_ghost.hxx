@@ -38,10 +38,13 @@ namespace gl::app
 
 		void destroy();
 
+		void setPlatformLogoVisible(bool bVisible);
+
 	private:
 		void generateNewForwardPos();
 
 		class sprite_component* mSpriteComponent;
+		class sprite_component* mPlatformLogoSprite;
 		class font_component* mGhostTitleFontComponent;
 		class font_component* mGhostMessageFontComponent;
 

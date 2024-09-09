@@ -2,6 +2,7 @@
 
 #include "actors/chat_ghost.hxx"
 #include "core/engine.hxx"
+#include "subsystems/twitch_manager.hxx"
 #include "subsystems/youtube_manager.hxx"
 
 static gl::app::chat_ghost_subsystem* gChatGhostSubsystem = nullptr;
@@ -25,6 +26,7 @@ void gl::app::chat_ghost_subsystem::init()
 	gChatGhostSubsystem = this;
 
 	youtube_manager::get()->onLiveChatMessage.bind(std::bind(&chat_ghost_subsystem::onLiveChatMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	twitch_manager::get()->onChatterReceived.bind(std::bind(&chat_ghost_subsystem::OnTwitchChatterReceived, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
 void gl::app::chat_ghost_subsystem::update(double delta)
@@ -54,5 +56,21 @@ void gl::app::chat_ghost_subsystem::onLiveChatMessage(const std::string& channel
 		auto ghost = dynamic_cast<chat_ghost*>(iter->get());
 		ghost->setSpeed(ghost->getSpeed() + 1);
 		ghost->setMessage(displayMessage);
+	}
+}
+
+void gl::app::chat_ghost_subsystem::OnTwitchChatterReceived(const std::string& userId, const std::string& userLogin, const std::string& userName)
+{
+	// temp: move somewhere else
+	const auto& objects = engine::get()->getObjects();
+	const auto iter = std::find_if(objects.begin(), objects.end(), [&userId](const std::unique_ptr<object>& obj)
+		{ 
+							const auto ghost = dynamic_cast<const chat_ghost*>(obj.get());
+							return ghost && ghost->getChannelId() == userId; });
+
+	if (iter == objects.end())
+	{
+		auto ghost = engine::get()->createObject<chat_ghost>(userName, userId);
+		ghost->setPlatformLogoVisible(true);
 	}
 }

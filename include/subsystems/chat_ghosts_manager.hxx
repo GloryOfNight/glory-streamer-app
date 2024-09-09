@@ -19,6 +19,8 @@ namespace gl::app
 		void draw(SDL_Renderer* renderer) override;
 
 	private:
+		
 		void onLiveChatMessage(const std::string& channelId, const std::string& displayName, const std::string& displayMessage);
+		void OnTwitchChatterReceived(const std::string& userId, const std::string& userLogin, const std::string& userName);
 	};
 } // namespace gl::app

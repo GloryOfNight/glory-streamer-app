@@ -18,27 +18,29 @@ gl::app::assets::sprite_sheet loadSpriteSheet(const gl::app::assets::asset_heade
 
 	if (json.contains("defaultAnimation"))
 		sheet.defaultAnimation = json["defaultAnimation"];
-	;
 
-	for (const auto& animationJson : json["animations"])
+	if (json.contains("animations"))
 	{
-		auto& anim = sheet.animations.emplace_back(sprite_sheet::animation());
-		anim.name = animationJson["name"];
-
-		if (animationJson.contains("repeats"))
-			anim.repeats = animationJson["repeats"];
-
-		if (animationJson.contains("allowInterrupt"))
-			anim.bAllowInterrupt = animationJson["allowInterrupt"];
-
-		if (animationJson.contains("next"))
-			anim.next = animationJson["next"];
-
-		for (const auto& frameJson : animationJson["frames"])
+		for (const auto& animationJson : json["animations"])
 		{
-			auto& frame = anim.frames.emplace_back(sprite_sheet::animation::frame());
-			frame.index = frameJson["index"];
-			frame.duration = frameJson["duration"];
+			auto& anim = sheet.animations.emplace_back(sprite_sheet::animation());
+			anim.name = animationJson["name"];
+
+			if (animationJson.contains("repeats"))
+				anim.repeats = animationJson["repeats"];
+
+			if (animationJson.contains("allowInterrupt"))
+				anim.bAllowInterrupt = animationJson["allowInterrupt"];
+
+			if (animationJson.contains("next"))
+				anim.next = animationJson["next"];
+
+			for (const auto& frameJson : animationJson["frames"])
+			{
+				auto& frame = anim.frames.emplace_back(sprite_sheet::animation::frame());
+				frame.index = frameJson["index"];
+				frame.duration = frameJson["duration"];
+			}
 		}
 	}
 

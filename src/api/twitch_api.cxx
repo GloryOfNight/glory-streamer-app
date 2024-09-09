@@ -27,7 +27,8 @@ std::string exchangeTwitchAuthCodeForAccessToken(const std::string& clientId, co
 									   "&client_secret=" + clientSecret +
 									   "&code=" + authCode +
 									   "&grant_type=authorization_code"
-									   "&redirect_uri=" + redirectUri;
+									   "&redirect_uri=" +
+									   redirectUri;
 
 		curl_easy_setopt(curl, CURLOPT_URL, tokenUrl.c_str());
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postFields.c_str());
@@ -110,3 +111,50 @@ std::pair<bool, ttv::api::auth_info> ttv::api::initialAuth(const std::string cli
 
 	return std::pair<bool, auth_info>{bSuccess, auth};
 }
+
+std::string ttv::api::fetch(const std::string url, const std::string accessToken, const std::string clientId)
+{
+	CURL* curl;
+	CURLcode res;
+	std::string headerBuffer;
+	std::string responseBuffer;
+
+	curl = curl_easy_init();
+	if (curl)
+	{
+		// Set the URL
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+		// Set the Authorization header
+		struct curl_slist* headers = NULL;
+		headers = curl_slist_append(headers, std::string("Authorization: Bearer " + accessToken).c_str());
+		headers = curl_slist_append(headers, std::string("Client-Id: " + clientId).c_str());
+		headers = curl_slist_append(headers, "Accept: application/json");
+		//if (!eTag.empty())
+		//	headers = curl_slist_append(headers, std::string("If-None-Match: " + eTag).c_str());
+
+		if (curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "gzip") == CURLE_OK)
+			headers = curl_slist_append(headers, "Content-Encoding: gzip");
+
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEHEADER, &headerBuffer);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
+
+		// Perform the request
+		res = curl_easy_perform(curl);
+
+		// Check for errors
+		if (res != CURLE_OK)
+		{
+			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+		}
+
+		// Clean up
+		curl_slist_free_all(headers);
+		curl_easy_cleanup(curl);
+	}
+
+	return responseBuffer;
+}
+
