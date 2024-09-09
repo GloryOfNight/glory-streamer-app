@@ -3,7 +3,6 @@
 #include "api/twitch_api.hxx"
 #include "core/log.hxx"
 #include "secrets/twitch-secret.h"
-#include "subsystems/timer_manager.hxx"
 
 #include <nlohmann/json.hpp>
 
@@ -28,7 +27,7 @@ void gl::app::twitch_manager::init()
 
 	gTwitchManager = this;
 
-	timer_manager::get()->addTimer(0.0, std::bind(&twitch_manager::requestAuth, this), false);
+	timer_manager::get()->addTimer(0.1, std::bind(&twitch_manager::requestAuth, this), false);
 }
 
 void gl::app::twitch_manager::update(double delta)
@@ -50,7 +49,13 @@ void gl::app::twitch_manager::update(double delta)
 
 			LOG(Display, "Authenticated with Twitch.");
 
-			requestUser();
+			if (mUserId.empty())
+				requestUser();
+
+			if (mRefreshAuth)
+				timer_manager::get()->clearTimer(mRefreshAuth);
+
+			timer_manager::get()->addTimer(authInfo.expiresIn - 15, std::bind(&twitch_manager::requestRefreshAuth, this), false);
 		}
 	}
 
@@ -71,7 +76,13 @@ void gl::app::twitch_manager::update(double delta)
 			mUserLogin = userResponseJson["data"][0]["login"];
 			mUserDisplayName = userResponseJson["data"][0]["display_name"];
 
-			requestChatters();
+			LOG(Display, "Twitch logged in as {}", mUserLogin);
+
+			if (mRefreshChatters == timer_handle())
+			{
+				mRefreshChatters = timer_manager::get()->addTimer(100.0, std::bind(&twitch_manager::requestChatters, this), true);
+				requestChatters();
+			}
 		}
 	}
 
@@ -91,7 +102,6 @@ void gl::app::twitch_manager::update(double delta)
 			{
 				onChatterReceived.execute(chatter["user_id"], chatter["user_login"], chatter["user_name"]);
 			}
-			timer_manager::get()->addTimer(60.0, std::bind(&twitch_manager::requestChatters, this), false);
 		}
 	}
 }
@@ -103,6 +113,18 @@ void gl::app::twitch_manager::draw(SDL_Renderer* renderer)
 void gl::app::twitch_manager::requestAuth()
 {
 	mAuthFuture = std::async(ttv::api::initialAuth, ttv::secret::clientId, ttv::secret::clientSecret);
+}
+
+void gl::app::twitch_manager::requestRefreshAuth()
+{
+	if (!bAuthSuccess)
+	{
+		LOG(Error, "Cannot refresh auth without authentication.");
+		return;
+	}
+
+	LOG(Display, "Refreshing Twitch authentication.");
+	mAuthFuture = std::async(ttv::api::refreshAuth, ttv::secret::clientId, ttv::secret::clientSecret, mAuth.refreshToken);
 }
 
 void gl::app::twitch_manager::requestUser()

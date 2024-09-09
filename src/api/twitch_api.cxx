@@ -112,6 +112,54 @@ std::pair<bool, ttv::api::auth_info> ttv::api::initialAuth(const std::string cli
 	return std::pair<bool, auth_info>{bSuccess, auth};
 }
 
+std::pair<bool, ttv::api::auth_info> ttv::api::refreshAuth(const std::string clientId, const std::string clientSecret, const std::string refreshToken)
+{
+	CURL* curl;
+	CURLcode res;
+
+	bool bSuccess = false;
+	auth_info auth{};
+
+	std::string responseBuffer;
+
+	curl = curl_easy_init();
+	if (curl)
+	{
+		const std::string tokenUrl = "https://id.twitch.tv/oauth2/token";
+		const std::string postFields = "client_id=" + clientId +
+									   "&client_secret=" + clientSecret +
+									   "&refresh_token=" + refreshToken +
+									   "&grant_type=refresh_token";
+
+		curl_easy_setopt(curl, CURLOPT_URL, tokenUrl.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postFields.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
+
+		res = curl_easy_perform(curl);
+		if (res != CURLE_OK)
+		{
+			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+		}
+		else
+		{
+			bSuccess = true;
+
+			const auto jsonAuth = nlohmann::json::parse(responseBuffer);
+
+			auth.accessToken = jsonAuth["access_token"];
+			auth.expiresIn = jsonAuth["expires_in"];
+			auth.refreshToken = jsonAuth["refresh_token"];
+			auth.scope = jsonAuth["scope"];
+			auth.tokenType = jsonAuth["token_type"];
+		}
+
+		curl_easy_cleanup(curl);
+	}
+
+	return std::pair<bool, auth_info>{bSuccess, auth};
+}
+
 std::string ttv::api::fetch(const std::string url, const std::string accessToken, const std::string clientId)
 {
 	CURL* curl;
@@ -157,4 +205,3 @@ std::string ttv::api::fetch(const std::string url, const std::string accessToken
 
 	return responseBuffer;
 }
-

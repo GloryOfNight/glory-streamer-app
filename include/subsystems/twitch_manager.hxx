@@ -3,6 +3,7 @@
 #include "api/twitch_api.hxx"
 #include "core/delegate.hxx"
 #include "core/subsystem.hxx"
+#include "subsystems/timer_manager.hxx"
 
 #include <future>
 #include <string>
@@ -25,6 +26,7 @@ namespace gl::app
 
 	private:
 		void requestAuth();
+		void requestRefreshAuth();
 
 		void requestUser();
 
@@ -32,6 +34,7 @@ namespace gl::app
 
 		std::future<std::pair<bool, ttv::api::auth_info>> mAuthFuture;
 		ttv::api::auth_info mAuth{};
+		timer_handle mRefreshAuth;
 		bool bAuthSuccess{false};
 
 		std::future<std::string> mUserFuture;
@@ -40,5 +43,6 @@ namespace gl::app
 		std::string mUserDisplayName{};
 
 		std::future<std::string> mChattersFuture;
+		timer_handle mRefreshChatters;
 	};
 } // namespace gl::app
