@@ -5,6 +5,7 @@
 #include "core/engine.hxx"
 #include "subsystems/chat_ghosts_manager.hxx"
 #include "subsystems/timer_manager.hxx"
+#include "subsystems/twitch_manager.hxx"
 #include "subsystems/youtube_manager.hxx"
 
 #include <SDL2/SDL_syswm.h>
@@ -257,6 +258,7 @@ void gl::app::engine::createSubsystems()
 	// todo: make sure subsystems are unique
 	createObject<timer_manager>();
 	createObject<youtube_manager>();
+	createObject<twitch_manager>();
 	createObject<chat_ghost_subsystem>();
 }
 

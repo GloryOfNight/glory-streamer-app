@@ -21,11 +21,13 @@ add_subdirectory(thirdparty)
 
 add_library(${PROJECT_NAME}-static STATIC   "src/assets/asset.cxx"
                                             "src/api/youtube_api.cxx" 
+                                            "src/api/twitch_api.cxx" 
                                             "src/core/engine.cxx" 
                                             "src/actors/components/sprite_component.cxx" 
                                             "src/actors/components/font_component.cxx" 
                                             "src/actors/chat_ghost.cxx"
                                             "src/subsystems/youtube_manager.cxx"
+                                            "src/subsystems/twitch_manager.cxx"
                                             "src/subsystems/timer_manager.cxx" 
                                             "src/core/object.cxx" 
                                             "src/core/actor.cxx" 
