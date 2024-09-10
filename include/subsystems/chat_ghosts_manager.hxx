@@ -21,6 +21,8 @@ namespace gl::app
 	private:
 		
 		void onLiveChatMessage(const std::string& channelId, const std::string& displayName, const std::string& displayMessage);
-		void OnTwitchChatterReceived(const std::string& userId, const std::string& userLogin, const std::string& userName);
+		void onTwitchChatterReceived(const std::string& userId, const std::string& userLogin, const std::string& userName);
+		void onTwitchMessageReceived(const std::string& userId, const std::string& userLogin, const std::string& userName, const std::string& message);
+
 	};
 } // namespace gl::app

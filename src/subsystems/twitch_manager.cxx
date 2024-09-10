@@ -83,6 +83,9 @@ void gl::app::twitch_manager::update(double delta)
 				mRefreshChatters = timer_manager::get()->addTimer(100.0, std::bind(&twitch_manager::requestChatters, this), true);
 				requestChatters();
 			}
+
+			mEventSubClient = std::make_unique<ttv::api::eventSubClient>();
+			mEventSubClient->connect();
 		}
 	}
 
@@ -101,6 +104,68 @@ void gl::app::twitch_manager::update(double delta)
 			for (const auto& chatter : chattersJson["data"])
 			{
 				onChatterReceived.execute(chatter["user_id"], chatter["user_login"], chatter["user_name"]);
+			}
+		}
+	}
+
+	if (mEventSubClient)
+	{
+		const std::string eventSubMessage = mEventSubClient->recv();
+		if (!eventSubMessage.empty())
+		{
+			try
+			{
+				nlohmann::json eventSubJson = nlohmann::json::parse(eventSubMessage);
+				if (eventSubJson.contains("metadata"))
+				{
+					const std::string messageType = eventSubJson["metadata"]["message_type"];
+					if (messageType == "session_welcome")
+					{
+						LOG(Display, "EventSub connected.");
+
+						const std::string sessionId = eventSubJson["payload"]["session"]["id"];
+
+						nlohmann::json postJson;
+						postJson["type"] = "channel.chat.message";
+						postJson["version"] = "1";
+						postJson["condition"]["broadcaster_user_id"] = mUserId;
+						postJson["condition"]["user_id"] = mUserId;
+						postJson["transport"]["method"] = "websocket";
+						postJson["transport"]["session_id"] = sessionId;
+
+						const std::string postStr = postJson.dump();
+
+						const std::string postRes = ttv::api::post("https://api.twitch.tv/helix/eventsub/subscriptions", mAuth.accessToken, ttv::secret::clientId, postStr);
+						const auto postResJson = nlohmann::json::parse(postRes);
+						if (postResJson.contains("error"))
+						{
+							LOG(Error, "Failed to subscribe to EventSub.");
+						}
+					}
+					else if (messageType == "notification")
+					{
+						if (eventSubJson["metadata"]["subscription_type"] == "channel.chat.message")
+						{
+							const std::string EventType = eventSubJson["payload"]["event"]["message_type"];
+							const std::string userId = eventSubJson["payload"]["event"]["chatter_user_id"];
+							const std::string userName = eventSubJson["payload"]["event"]["chatter_user_login"];
+							const std::string userDisplayName = eventSubJson["payload"]["event"]["chatter_user_name"];
+							const std::string message = eventSubJson["payload"]["event"]["message"]["text"];
+
+							LOG(Display, "Twitch chat message from {}: {}", userDisplayName, message);
+
+							onMessageReceived.execute(userId, userName, userDisplayName, message);
+						}
+					}
+					else
+					{
+						LOG(Display, "Twitch received unsupported message type: %s", messageType);
+					}
+				}
+			}
+			catch (...)
+			{
+				LOG(Error, "Failed to parse EventSub message.");
 			}
 		}
 	}

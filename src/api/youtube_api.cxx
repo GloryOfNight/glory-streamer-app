@@ -228,7 +228,7 @@ std::string yt::api::post(const std::string url, const std::string accessToken, 
 		}
 
 		// Clean up
-		//curl_slist_free_all(headers);
+		curl_slist_free_all(headers);
 		curl_easy_cleanup(curl);
 	}
 

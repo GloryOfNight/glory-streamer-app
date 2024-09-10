@@ -44,9 +44,26 @@ namespace ttv::api
 		std::string tokenType{};
 	};
 
+	struct eventSubClient
+	{
+		eventSubClient() = default;
+		eventSubClient(const eventSubClient&) = delete;
+		eventSubClient(eventSubClient&) = delete;
+		~eventSubClient();
+
+		bool connect();
+
+		std::string recv();
+
+	private:
+		void* mCurl{};
+	};
+
 	std::pair<bool, auth_info> initialAuth(const std::string clientId, const std::string clientSecret);
 
 	std::pair<bool, auth_info> refreshAuth(const std::string clientId, const std::string clientSecret, const std::string refreshToken);
 
 	std::string fetch(const std::string url, const std::string accessToken, const std::string clientId);
+
+	std::string post(const std::string url, const std::string accessToken, const std::string clientId, const std::string postJson);
 } // namespace ttv::api

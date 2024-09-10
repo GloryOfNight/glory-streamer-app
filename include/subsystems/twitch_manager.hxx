@@ -6,6 +6,7 @@
 #include "subsystems/timer_manager.hxx"
 
 #include <future>
+#include <memory>
 #include <string>
 
 namespace gl::app
@@ -13,7 +14,9 @@ namespace gl::app
 	class twitch_manager : public subsystem
 	{
 	public:
-		delegate<const std::string& /*user_id*/, const std::string& /*user_login*/, const std::string& /*user_name*/> onChatterReceived;
+		delegate<const std::string& /*userId*/, const std::string& /*userLogin*/, const std::string& /*userName*/> onChatterReceived;
+
+		delegate<const std::string& /*userId*/, const std::string& /*userLogin*/, const std::string& /*userName*/, const std::string& /*message*/> onMessageReceived;
 
 		twitch_manager() = default;
 		~twitch_manager();
@@ -44,5 +47,7 @@ namespace gl::app
 
 		std::future<std::string> mChattersFuture;
 		timer_handle mRefreshChatters;
+
+		std::unique_ptr<ttv::api::eventSubClient> mEventSubClient;
 	};
 } // namespace gl::app
