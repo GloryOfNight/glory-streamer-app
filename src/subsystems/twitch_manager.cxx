@@ -157,9 +157,12 @@ void gl::app::twitch_manager::update(double delta)
 							onMessageReceived.execute(userId, userName, userDisplayName, message);
 						}
 					}
+					else if (messageType == "session_keepalive") // do nothing
+					{
+					}
 					else
 					{
-						LOG(Display, "Twitch received unsupported message type: %s", messageType);
+						LOG(Display, "Twitch received unsupported message type: {}", messageType);
 					}
 				}
 			}
