@@ -27,6 +27,8 @@ namespace gl::app
 
 		void setNextAnimation(const std::string& name);
 
+		void setColorMode(uint8_t r, uint8_t g, uint8_t b);
+
 	private:
 		assets::sprite_sheet mSpriteSheet{};
 
@@ -44,6 +46,8 @@ namespace gl::app
 		double mRemainingDuration{};
 
 		std::string mNextAnimationName{};
+
+		uint8_t mColorModeR{255}, mColorModeG{255}, mColorModeB{255};
 
 		bool bFlipHorizontal{false};
 	};

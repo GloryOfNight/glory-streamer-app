@@ -4,10 +4,29 @@
 #include "actors/components/sprite_component.hxx"
 #include "core/engine.hxx"
 
+#include <array>
 #include <cmath>
 #include <random>
 
-gl::app::ghost_box& gl::app::chat_ghost::getGhostBox()
+// clang-format off
+static std::array<uint8_t[3], 8> gGhostColors =
+{
+
+		{
+			{255,250,250},		// Snow
+			{240,248,255},		// Alice Blue
+			{240,255,255},		// Azure Mist
+			{248,248,255},		// Ghost White
+			{245,255,250},		// Mint Cream
+			{255,255,240},		// Ivory
+			{249,255,227},		// Pomelo White
+			{240,255,240}		// Honeydew
+		}
+};
+// clang-format on
+
+gl::app::ghost_box&
+gl::app::chat_ghost::getGhostBox()
 {
 	static ghost_box ghostBox{0 + 60, 0 + 60, 2560 - 60, 1440 - 60};
 	return ghostBox;
@@ -16,8 +35,8 @@ gl::app::ghost_box& gl::app::chat_ghost::getGhostBox()
 gl::app::chat_ghost::chat_ghost(const std::string& subTitle, const std::string& subId)
 	: mSpriteComponent{}
 	, mGhostTitleFontComponent{}
-	, mSubTitle(subTitle)
-	, mSubChannelId(subId)
+	, mUserName(subTitle)
+	, mUserId(subId)
 {
 	mSpriteComponent = addComponent<sprite_component>("assets/ghost_sprite.json");
 
@@ -57,9 +76,13 @@ void gl::app::chat_ghost::init()
 
 	mSpriteComponent->setDstSize(60, 60);
 
+	uint8_t r, g, b;
+	getGhostColor(r, g, b);
+	mSpriteComponent->setColorMode(r, g, b);
+
 	mPlatformLogoSprite->setDstSize(20, 20);
 
-	mGhostTitleFontComponent->setText(mSubTitle);
+	mGhostTitleFontComponent->setText(mUserName);
 	mGhostTitleFontComponent->setWrapping(360);
 	mGhostTitleFontComponent->setPos(0, -50);
 
@@ -184,4 +207,23 @@ void gl::app::chat_ghost::generateNewForwardPos()
 	mTargetFwY = fwdDis(gen);
 
 	mRemainingMoveTime = timeDis(gen);
+}
+
+void gl::app::chat_ghost::getGhostColor(uint8_t& r, uint8_t& g, uint8_t& b) const
+{
+	uint8_t* rgb = nullptr;
+
+	if (mUserId.empty())
+	{
+		rgb = gGhostColors[std::rand() % gGhostColors.size()];
+	}
+	else
+	{
+		uint64_t hash = std::hash<std::string>{}(mUserId);
+		rgb = gGhostColors[hash % gGhostColors.size()];
+	}
+
+	r = rgb[0];
+	g = rgb[1];
+	b = rgb[2];
 }

@@ -45,7 +45,7 @@ void gl::app::chat_ghost_subsystem::onLiveChatMessage(const std::string& channel
 	const auto iter = std::find_if(objects.begin(), objects.end(), [&channelId](const std::unique_ptr<object>& obj)
 		{ 
 							const auto ghost = dynamic_cast<const chat_ghost*>(obj.get());
-							return ghost && ghost->getChannelId() == channelId; });
+							return ghost && ghost->getUserId() == channelId; });
 
 	if (iter == objects.end())
 	{
@@ -68,7 +68,7 @@ void gl::app::chat_ghost_subsystem::onTwitchChatterReceived(const std::string& u
 	const auto iter = std::find_if(objects.begin(), objects.end(), [&userId](const std::unique_ptr<object>& obj)
 		{ 
 							const auto ghost = dynamic_cast<const chat_ghost*>(obj.get());
-							return ghost && ghost->getChannelId() == userId; });
+							return ghost && ghost->getUserId() == userId; });
 
 	if (iter == objects.end())
 	{
@@ -83,7 +83,7 @@ void gl::app::chat_ghost_subsystem::onTwitchMessageReceived(const std::string& u
 	const auto iter = std::find_if(objects.begin(), objects.end(), [&userId](const std::unique_ptr<object>& obj)
 		{ 
 							const auto ghost = dynamic_cast<const chat_ghost*>(obj.get());
-							return ghost && ghost->getChannelId() == userId; });
+							return ghost && ghost->getUserId() == userId; });
 
 	if (iter == objects.end())
 	{

@@ -108,6 +108,8 @@ void gl::app::sprite_component::draw(SDL_Renderer* renderer)
 		mDstRect.x -= mDstRect.w / 2;
 		mDstRect.y -= mDstRect.h / 2;
 
+		SDL_SetTextureColorMod(mTexture, mColorModeR, mColorModeG, mColorModeB);
+
 		SDL_Point center = {mDstRect.w / 2, mDstRect.h / 2};
 		SDL_RenderCopyEx(renderer, mTexture, &mSrcRect, &mDstRect, mAngle, &center, Flip);
 	}
@@ -126,4 +128,11 @@ void gl::app::sprite_component::setAngle(double angle)
 void gl::app::sprite_component::setNextAnimation(const std::string& name)
 {
 	mNextAnimationName = name;
+}
+
+void gl::app::sprite_component::setColorMode(uint8_t r, uint8_t g, uint8_t b)
+{
+	mColorModeR = r;
+	mColorModeG = g;
+	mColorModeB = b;
 }

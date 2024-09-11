@@ -314,9 +314,9 @@ void gl::app::engine::showObjectInspector()
 
 		if (ghost)
 		{
-			const auto channelId = ghost->getChannelId();
+			const auto channelId = ghost->getUserId();
 
-			ImGui::Text("Ghost - %s (%s)", ghost->getTitle().c_str(), ghost->getChannelId().c_str());
+			ImGui::Text("Ghost - %s (%s)", ghost->getUserName().c_str(), ghost->getUserId().c_str());
 
 			double x, y;
 			ghost->getPos(&x, &y);

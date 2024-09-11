@@ -25,9 +25,9 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		const std::string& getTitle() const { return mSubTitle; };
+		const std::string& getUserName() const { return mUserName; };
 
-		const std::string& getChannelId() const { return mSubChannelId; };
+		const std::string& getUserId() const { return mUserId; };
 
 		double getSpeed() const { return mSpeed; };
 		void setSpeed(double speed);
@@ -45,13 +45,15 @@ namespace gl::app
 	private:
 		void generateNewForwardPos();
 
+		void getGhostColor(uint8_t& r, uint8_t& g, uint8_t& b) const;
+
 		class sprite_component* mSpriteComponent;
 		class sprite_component* mPlatformLogoSprite;
 		class font_component* mGhostTitleFontComponent;
 		class font_component* mGhostMessageFontComponent;
 
-		std::string mSubTitle;
-		std::string mSubChannelId;
+		std::string mUserName;
+		std::string mUserId;
 
 		timer_handle mUpdateForwardPosTimer;
 		double mFwX{}, mFwY{};			   // forward pos
