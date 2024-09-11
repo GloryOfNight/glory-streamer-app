@@ -1,6 +1,7 @@
 ﻿#include "core/engine.hxx"
 
 #include "actors/chat_ghost.hxx"
+#include "actors/pony.hxx"
 #include "assets/sprite_asset.hxx"
 #include "core/engine.hxx"
 #include "subsystems/chat_ghosts_manager.hxx"
@@ -273,6 +274,11 @@ void gl::app::engine::showObjectInspector()
 	ImGui::SameLine();
 	static float newGhostSpeed = 60.0;
 	ImGui::InputFloat("Speed", &newGhostSpeed, 0.f, 0.f, "%.1f");
+
+	if (ImGui::Button("Spawn bread"))
+	{
+		auto newBread = createObject<pony>("GloryOfNight", std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+	}
 
 	if (ImGui::Button("Spawn ghost"))
 	{
