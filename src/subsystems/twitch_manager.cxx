@@ -80,7 +80,7 @@ void gl::app::twitch_manager::update(double delta)
 
 			if (mRefreshChatters == timer_handle())
 			{
-				mRefreshChatters = timer_manager::get()->addTimer(100.0, std::bind(&twitch_manager::requestChatters, this), true);
+				mRefreshChatters = timer_manager::get()->addTimer(30.0, std::bind(&twitch_manager::requestChatters, this), true);
 				requestChatters();
 			}
 
@@ -103,6 +103,9 @@ void gl::app::twitch_manager::update(double delta)
 		{
 			for (const auto& chatter : chattersJson["data"])
 			{
+				if (chatter["user_id"] == mUserId)
+					continue;
+
 				onChatterReceived.execute(chatter["user_id"], chatter["user_login"], chatter["user_name"]);
 			}
 		}

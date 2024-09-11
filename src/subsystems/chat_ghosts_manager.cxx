@@ -40,7 +40,6 @@ void gl::app::chat_ghost_subsystem::draw(SDL_Renderer* renderer)
 
 void gl::app::chat_ghost_subsystem::onLiveChatMessage(const std::string& channelId, const std::string& displayName, const std::string& displayMessage)
 {
-	// temp: move somewhere else
 	const auto& objects = engine::get()->getObjects();
 	const auto iter = std::find_if(objects.begin(), objects.end(), [&channelId](const std::unique_ptr<object>& obj)
 		{ 
@@ -56,14 +55,12 @@ void gl::app::chat_ghost_subsystem::onLiveChatMessage(const std::string& channel
 	else
 	{
 		auto ghost = dynamic_cast<chat_ghost*>(iter->get());
-		ghost->setSpeed(ghost->getSpeed() + 1);
 		ghost->setMessage(displayMessage);
 	}
 }
 
 void gl::app::chat_ghost_subsystem::onTwitchChatterReceived(const std::string& userId, const std::string& userLogin, const std::string& userName)
 {
-	// temp: move somewhere else
 	const auto& objects = engine::get()->getObjects();
 	const auto iter = std::find_if(objects.begin(), objects.end(), [&userId](const std::unique_ptr<object>& obj)
 		{ 
@@ -74,6 +71,11 @@ void gl::app::chat_ghost_subsystem::onTwitchChatterReceived(const std::string& u
 	{
 		auto ghost = engine::get()->createObject<chat_ghost>(userName, userId);
 		ghost->showTwitchLogo();
+	}
+	else
+	{
+		auto ghost = dynamic_cast<chat_ghost*>(iter->get());
+		ghost->resetDeathTimer();
 	}
 }
 
@@ -94,7 +96,6 @@ void gl::app::chat_ghost_subsystem::onTwitchMessageReceived(const std::string& u
 	else
 	{
 		auto ghost = dynamic_cast<chat_ghost*>(iter->get());
-		ghost->setSpeed(ghost->getSpeed() + 1);
 		ghost->setMessage(message);
 	}
 }

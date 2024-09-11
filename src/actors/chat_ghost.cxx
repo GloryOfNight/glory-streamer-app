@@ -68,7 +68,7 @@ void gl::app::chat_ghost::init()
 	mUpdateForwardPosTimer = timer_manager::get()->addTimer(6.0, std::bind(&chat_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
-	mDeathTimer = timer_manager::get()->addTimer(600.0, std::bind(&chat_ghost::destroy, this), false);
+	mDeathTimer = timer_manager::get()->addTimer(60.0, std::bind(&chat_ghost::destroy, this), false);
 
 	const auto& ghostBox = getGhostBox();
 	mX = ghostBox.w / 2;
@@ -139,7 +139,7 @@ void gl::app::chat_ghost::update(double delta)
 	if (mX == ghostBox.x || mX == ghostBox.w || mY == ghostBox.y || mY == ghostBox.h)
 		generateNewForwardPos();
 
-	mPlatformLogoSprite->setPos(mGhostTitleFontComponent->getDstRect().w / 2 + 16, -34);
+	mPlatformLogoSprite->setPos(mGhostTitleFontComponent->getDstRect().w / 2 + 10, -34);
 
 	mSpriteComponent->setFlipHorizontal(mFwX < 0);
 	actor::update(delta);
@@ -169,7 +169,7 @@ void gl::app::chat_ghost::setMessage(const std::string& message)
 	auto timerManager = timer_manager::get();
 
 	timerManager->clearTimer(mHideMessageTimer);
-	timerManager->resetTimer(mDeathTimer);
+	resetDeathTimer();
 
 	mHideMessageTimer = timerManager->addTimer(12.0, std::bind(&chat_ghost::showMessage, this, false), false);
 
@@ -194,6 +194,11 @@ void gl::app::chat_ghost::showYoutubeLogo()
 void gl::app::chat_ghost::showTwitchLogo()
 {
 	mPlatformLogoSprite->setNextAnimation("twitch");
+}
+
+void gl::app::chat_ghost::resetDeathTimer()
+{
+	timer_manager::get()->resetTimer(mDeathTimer);
 }
 
 void gl::app::chat_ghost::generateNewForwardPos()

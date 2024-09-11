@@ -42,6 +42,8 @@ namespace gl::app
 
 		void showTwitchLogo();
 
+		void resetDeathTimer();
+
 	private:
 		void generateNewForwardPos();
 

@@ -354,6 +354,20 @@ void gl::app::engine::showObjectInspector()
 				ghost->setMessage(newMessage);
 			}
 
+			ImGui::SameLine();
+
+			if (ImGui::Button((std::string("Set Twitch##") + channelId).c_str()))
+			{
+				ghost->showTwitchLogo();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button((std::string("Set Youtube##") + channelId).c_str()))
+			{
+				ghost->showYoutubeLogo();
+			}
+
 			ImGui::Separator();
 		}
 	};
