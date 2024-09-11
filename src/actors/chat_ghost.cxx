@@ -9,7 +9,7 @@
 
 gl::app::ghost_box& gl::app::chat_ghost::getGhostBox()
 {
-	static ghost_box ghostBox{0, 0, 2560, 1440};
+	static ghost_box ghostBox{0 + 60, 0 + 60, 2560 - 60, 1440 - 60};
 	return ghostBox;
 }
 
@@ -21,8 +21,10 @@ gl::app::chat_ghost::chat_ghost(const std::string& subTitle, const std::string& 
 {
 	mSpriteComponent = addComponent<sprite_component>("assets/ghost_sprite.json");
 
-	mPlatformLogoSprite = addComponent<sprite_component>("assets/twitch_sprite.json");
-	mPlatformLogoSprite->setVisible(false);
+	mPlatformLogoSprite = addComponent<sprite_component>("assets/platform_logo_sprite.json");
+	mPlatformLogoSprite->setVisible(true);
+
+	mPlatformLogoSprite->setNextAnimation("youtube");
 
 	mGhostTitleFontComponent = addComponent<font_component>("assets/fonts/Arsenal-Bold.ttf", 22);
 	mGhostMessageFontComponent = addComponent<font_component>("assets/fonts/Arsenal-BoldItalic.ttf", 20);
@@ -161,9 +163,14 @@ void gl::app::chat_ghost::destroy()
 	engine::get()->removeObject(this);
 }
 
-void gl::app::chat_ghost::setPlatformLogoVisible(bool bVisible)
+void gl::app::chat_ghost::showYoutubeLogo()
 {
-	mPlatformLogoSprite->setVisible(bVisible);
+	mPlatformLogoSprite->setNextAnimation("youtube");
+}
+
+void gl::app::chat_ghost::showTwitchLogo()
+{
+	mPlatformLogoSprite->setNextAnimation("twitch");
 }
 
 void gl::app::chat_ghost::generateNewForwardPos()

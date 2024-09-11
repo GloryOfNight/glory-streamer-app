@@ -1,0 +1,37 @@
+{
+  "type": "sprite_sheet",
+  "version": 0,
+  "name": "platofrm logo sprite",
+  "resourcePath": "assets/sprites/platform_logos.png",
+  "size": {
+    "w": 16,
+    "h": 16
+  },
+  "offset": {
+    "x": 0,
+    "y": 0
+  },
+  "defaultAnimation": "twitch",
+  "animations": [
+    {
+      "name": "twitch",
+      "allowInterrupt": true,
+      "frames": [
+        {
+          "index": 0,
+          "duration": 0.0
+        }
+      ]
+    },
+    {
+      "name": "youtube",
+      "allowInterrupt": true,
+      "frames": [
+        {
+          "index": 1,
+          "duration": 0.0
+        }
+      ]
+    }
+  ]
+}

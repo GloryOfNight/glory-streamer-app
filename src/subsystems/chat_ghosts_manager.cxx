@@ -51,6 +51,7 @@ void gl::app::chat_ghost_subsystem::onLiveChatMessage(const std::string& channel
 	{
 		auto ghost = engine::get()->createObject<chat_ghost>(displayName, channelId);
 		ghost->setMessage(displayMessage);
+		ghost->showYoutubeLogo();
 	}
 	else
 	{
@@ -72,7 +73,7 @@ void gl::app::chat_ghost_subsystem::onTwitchChatterReceived(const std::string& u
 	if (iter == objects.end())
 	{
 		auto ghost = engine::get()->createObject<chat_ghost>(userName, userId);
-		ghost->setPlatformLogoVisible(true);
+		ghost->showTwitchLogo();
 	}
 }
 
@@ -88,7 +89,7 @@ void gl::app::chat_ghost_subsystem::onTwitchMessageReceived(const std::string& u
 	{
 		auto ghost = engine::get()->createObject<chat_ghost>(userName, userId);
 		ghost->setMessage(message);
-		ghost->setPlatformLogoVisible(true);
+		ghost->showTwitchLogo();
 	}
 	else
 	{

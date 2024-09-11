@@ -38,7 +38,9 @@ namespace gl::app
 
 		void destroy();
 
-		void setPlatformLogoVisible(bool bVisible);
+		void showYoutubeLogo();
+
+		void showTwitchLogo();
 
 	private:
 		void generateNewForwardPos();
