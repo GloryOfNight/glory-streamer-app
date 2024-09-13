@@ -241,10 +241,18 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 	if (!bAuthSuccess)
 		return;
 
-	const auto liveBroadcast = std::find_if(mBroadcasts.begin(), mBroadcasts.end(), [](const broadcast& val)
-		{ return val.lifeCycleStatus == "live" || val.lifeCycleStatus == "testing" || val.lifeCycleStatus == "ready"; });
+	const broadcast* liveBroadcast = nullptr;
 
-	if (liveBroadcast == mBroadcasts.end())
+	std::for_each(mBroadcasts.begin(), mBroadcasts.end(), [&liveBroadcast](const broadcast& val)
+		{ 
+			if (liveBroadcast == nullptr)
+				liveBroadcast = &val;
+			else if (liveBroadcast->lifeCycleStatus == "ready" && (val.lifeCycleStatus == "testing" ||val.lifeCycleStatus == "live"))
+				liveBroadcast = &val;
+			else if (liveBroadcast->lifeCycleStatus == "testing" &&  val.lifeCycleStatus == "live" )
+				liveBroadcast = &val; });
+
+	if (liveBroadcast == nullptr)
 		return;
 
 	const auto listLiveMessagesRequest = yt::api::live::listLiveChatMessagesRequest(yt::secret::clientSecret)

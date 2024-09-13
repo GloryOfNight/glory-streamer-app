@@ -65,14 +65,20 @@ void gl::app::chat_ghost::init()
 {
 	actor::init();
 
+	const auto& ghostBox = getGhostBox();
+
+	std::random_device rd{};
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<double> randPosX(ghostBox.x, ghostBox.w);
+	std::uniform_real_distribution<double> randPosY(ghostBox.y, ghostBox.h);
+
 	mUpdateForwardPosTimer = timer_manager::get()->addTimer(6.0, std::bind(&chat_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
-	mDeathTimer = timer_manager::get()->addTimer(60.0, std::bind(&chat_ghost::destroy, this), false);
+	mDeathTimer = timer_manager::get()->addTimer(120.0, std::bind(&chat_ghost::destroy, this), false);
 
-	const auto& ghostBox = getGhostBox();
-	mX = ghostBox.w / 2;
-	mY = ghostBox.h / 2;
+	mX = randPosX(gen);
+	mY = randPosY(gen);
 
 	mSpriteComponent->setDstSize(60, 60);
 
