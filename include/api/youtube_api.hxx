@@ -1,5 +1,7 @@
 #pragma once
 
+#include "nlohmann/json.hpp"
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -24,6 +26,34 @@ namespace yt::api::live
 	{
 		return value ? "true" : "false";
 	}
+
+	struct insertLiveChatMessageRequest
+	{
+		insertLiveChatMessageRequest(const std::string& key)
+		{
+			url = std::string("https://youtube.googleapis.com/youtube/v3/liveChat/messages?part=snippet&key=") + key;
+
+			json["snippet"]["liveChatId"] = "null";
+			json["snippet"]["type"] = "textMessageEvent";
+			json["snippet"]["textMessageDetails"]["messageText"] = "null";
+		}
+
+		insertLiveChatMessageRequest& setLiveChatId(const std::string& id)
+		{
+			json["snippet"]["liveChatId"] = id;
+			return *this;
+		}
+
+		insertLiveChatMessageRequest& setMessageText(const std::string& text)
+		{
+			json["snippet"]["textMessageDetails"]["messageText"] = text;
+			return *this;
+		}
+
+		std::string url;
+
+		nlohmann::json json;
+	};
 
 	// https://developers.google.com/youtube/v3/live/docs/liveBroadcasts/list
 	struct listLiveBroadcastsRequest

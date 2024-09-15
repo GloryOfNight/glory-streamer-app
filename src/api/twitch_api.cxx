@@ -56,7 +56,7 @@ std::pair<bool, ttv::api::auth_info> ttv::api::initialAuth(const std::string cli
 
 	std::cout << "========================\n"
 			  << std::endl;
-	const std::string scopes = "channel:read:subscriptions+user:read:chat+moderator:read:chatters";
+	const std::string scopes = "channel:read:subscriptions+user:read:chat+user:write:chat+moderator:read:chatters";
 	const std::string uri = std::format("https://id.twitch.tv/oauth2/authorize?response_type=code&client_id={0}&redirect_uri={1}&scope={2}&force_verify=true", clientId, OAUTH2_REDIRECT_URL, scopes);
 	std::cout << uri << std::endl;
 	std::cout << "\n========================" << std::endl;

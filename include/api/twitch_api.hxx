@@ -1,5 +1,7 @@
 #pragma once
 
+#include "nlohmann/json.hpp"
+
 #include <format>
 #include <string>
 #include <utility>
@@ -7,15 +9,55 @@
 
 namespace ttv::api
 {
-	// https://dev.twitch.tv/docs/api/reference/#get-users
-	struct ListUsers
+	struct sendChatMessageRequest
 	{
-		ListUsers()
+		sendChatMessageRequest()
+		{
+			url = "https://api.twitch.tv/helix/chat/messages";
+			json["broadcaster_id"] = "null";
+			json["sender_id"] = "null";
+			json["message"] = "null";
+		}
+
+		sendChatMessageRequest& setBroadcasterId(const std::string broadcasterId)
+		{
+			json["broadcaster_id"] = broadcasterId;
+			return *this;
+		}
+
+		sendChatMessageRequest& setSenderId(const std::string userId)
+		{
+			json["sender_id"] = userId;
+			return *this;
+		}
+
+		sendChatMessageRequest& setMessage(const std::string message)
+		{
+			json["message"] = message;
+			return *this;
+		}
+
+		sendChatMessageRequest& setReplyMessageId(const std::string replyMessageId)
+		{
+			if (!replyMessageId.empty())
+				json["reply_parent_message_id"] = replyMessageId;
+			return *this;
+		}
+
+		std::string url;
+
+		nlohmann::json json;
+	};
+
+	// https://dev.twitch.tv/docs/api/reference/#get-users
+	struct listUsers
+	{
+		listUsers()
 		{
 			url = "https://api.twitch.tv/helix/users";
 		}
 
-		ListUsers& setLogin(const std::string& login)
+		listUsers& setLogin(const std::string& login)
 		{
 			url.append("?login=" + login);
 			return *this;
@@ -25,9 +67,9 @@ namespace ttv::api
 	};
 
 	// https://dev.twitch.tv/docs/api/reference/#get-chatters
-	struct ListChattersRequest
+	struct listChattersRequest
 	{
-		ListChattersRequest(const std::string broadcasterId, const std::string moderatorId)
+		listChattersRequest(const std::string broadcasterId, const std::string moderatorId)
 		{
 			url = std::format("https://api.twitch.tv/helix/chat/chatters?broadcaster_id={0}&moderator_id={1}", broadcasterId, moderatorId);
 		}

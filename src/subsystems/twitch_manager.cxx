@@ -103,9 +103,6 @@ void gl::app::twitch_manager::update(double delta)
 		{
 			for (const auto& chatter : chattersJson["data"])
 			{
-				if (chatter["user_id"] == mUserId)
-					continue;
-
 				onChatterReceived.execute(chatter["user_id"], chatter["user_login"], chatter["user_name"]);
 			}
 		}
@@ -154,10 +151,11 @@ void gl::app::twitch_manager::update(double delta)
 							const std::string userName = eventSubJson["payload"]["event"]["chatter_user_login"];
 							const std::string userDisplayName = eventSubJson["payload"]["event"]["chatter_user_name"];
 							const std::string message = eventSubJson["payload"]["event"]["message"]["text"];
+							const std::string messageId = eventSubJson["payload"]["event"]["message_id"];
 
 							LOG(Display, "Twitch chat message from {}: {}", userDisplayName, message);
 
-							onMessageReceived.execute(userId, userName, userDisplayName, message);
+							onMessageReceived.execute(userId, userName, userDisplayName, message, messageId);
 						}
 					}
 					else if (messageType == "session_keepalive") // do nothing
@@ -179,6 +177,23 @@ void gl::app::twitch_manager::update(double delta)
 
 void gl::app::twitch_manager::draw(SDL_Renderer* renderer)
 {
+}
+
+void gl::app::twitch_manager::sendChatMessage(const std::string& message, const std::string replyMessageId)
+{
+	if (!bAuthSuccess)
+	{
+		LOG(Error, "Cannot send chat message without authentication.");
+		return;
+	}
+
+	const ttv::api::sendChatMessageRequest request = ttv::api::sendChatMessageRequest()
+														 .setBroadcasterId(mUserId)
+														 .setSenderId(mUserId)
+														 .setMessage(message)
+														 .setReplyMessageId(replyMessageId);
+
+	std::future<std::string> messageFuture = std::async(ttv::api::post, request.url, mAuth.accessToken, ttv::secret::clientId, request.json.dump());
 }
 
 void gl::app::twitch_manager::requestAuth()
@@ -206,7 +221,7 @@ void gl::app::twitch_manager::requestUser()
 		return;
 	}
 
-	const ttv::api::ListUsers request = ttv::api::ListUsers();
+	const ttv::api::listUsers request = ttv::api::listUsers();
 
 	mUserFuture = std::async(ttv::api::fetch, request.url, mAuth.accessToken, ttv::secret::clientId);
 }
@@ -219,7 +234,7 @@ void gl::app::twitch_manager::requestChatters()
 		return;
 	}
 
-	const ttv::api::ListChattersRequest request = ttv::api::ListChattersRequest(mUserId, mUserId);
+	const ttv::api::listChattersRequest request = ttv::api::listChattersRequest(mUserId, mUserId);
 
 	mChattersFuture = std::async(ttv::api::fetch, request.url, mAuth.accessToken, ttv::secret::clientId);
 }

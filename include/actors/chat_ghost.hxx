@@ -32,6 +32,8 @@ namespace gl::app
 		double getSpeed() const { return mSpeed; };
 		void setSpeed(double speed);
 
+		void sayHi();
+
 		void setMessage(const std::string& message);
 
 		void showMessage(bool bShow);

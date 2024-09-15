@@ -16,7 +16,7 @@ namespace gl::app
 	public:
 		delegate<const std::string& /*userId*/, const std::string& /*userLogin*/, const std::string& /*userName*/> onChatterReceived;
 
-		delegate<const std::string& /*userId*/, const std::string& /*userLogin*/, const std::string& /*userName*/, const std::string& /*message*/> onMessageReceived;
+		delegate<const std::string& /*userId*/, const std::string& /*userLogin*/, const std::string& /*userName*/, const std::string& /*message*/, const std::string& /*messageId*/> onMessageReceived;
 
 		twitch_manager() = default;
 		~twitch_manager();
@@ -26,6 +26,8 @@ namespace gl::app
 		void init() override;
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
+
+		void sendChatMessage(const std::string& message, const std::string replyMessageId);
 
 	private:
 		void requestAuth();

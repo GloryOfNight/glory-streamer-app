@@ -1,4 +1,4 @@
-#include "actors/chat_ghost.hxx"
+﻿#include "actors/chat_ghost.hxx"
 
 #include "actors/components/font_component.hxx"
 #include "actors/components/sprite_component.hxx"
@@ -75,7 +75,7 @@ void gl::app::chat_ghost::init()
 	mUpdateForwardPosTimer = timer_manager::get()->addTimer(6.0, std::bind(&chat_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
-	mDeathTimer = timer_manager::get()->addTimer(120.0, std::bind(&chat_ghost::destroy, this), false);
+	mDeathTimer = timer_manager::get()->addTimer(300.0, std::bind(&chat_ghost::destroy, this), false);
 
 	mX = randPosX(gen);
 	mY = randPosY(gen);
@@ -159,6 +159,12 @@ void gl::app::chat_ghost::draw(SDL_Renderer* renderer)
 void gl::app::chat_ghost::setSpeed(double speed)
 {
 	mSpeed = speed;
+}
+
+void gl::app::chat_ghost::sayHi()
+{
+	const std::vector<std::string> greetings = {"Привет стрим!", "Привет всем!", "Привет чат!"};
+	setMessage(greetings[std::rand() % greetings.size()]);
 }
 
 void gl::app::chat_ghost::setMessage(const std::string& message)

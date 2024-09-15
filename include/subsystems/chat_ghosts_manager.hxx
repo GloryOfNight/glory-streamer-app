@@ -3,6 +3,7 @@
 #include "core/subsystem.hxx"
 
 #include <string>
+#include <vector>
 
 namespace gl::app
 {
@@ -19,10 +20,10 @@ namespace gl::app
 		void draw(SDL_Renderer* renderer) override;
 
 	private:
-		
 		void onLiveChatMessage(const std::string& channelId, const std::string& displayName, const std::string& displayMessage);
 		void onTwitchChatterReceived(const std::string& userId, const std::string& userLogin, const std::string& userName);
-		void onTwitchMessageReceived(const std::string& userId, const std::string& userLogin, const std::string& userName, const std::string& message);
+		void onTwitchMessageReceived(const std::string& userId, const std::string& userLogin, const std::string& userName, const std::string& message, const std::string messageId);
 
+		class chat_ghost* findGhostByUserId(const std::string& userId);
 	};
 } // namespace gl::app

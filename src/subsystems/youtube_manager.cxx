@@ -56,12 +56,12 @@ void gl::app::youtube_manager::update(double delta)
 		{
 			LOG(Display, "User authenticated");
 
-			auth = authInfo;
+			mAuth = authInfo;
 			bAuthSuccess = true;
 
 			auto timerManager = timer_manager::get();
 
-			mRefreshAuthTimer = timerManager->addTimer(auth.expiresIn - 15, std::bind(&youtube_manager::requestRefreshAuth, this), false);
+			mRefreshAuthTimer = timerManager->addTimer(mAuth.expiresIn - 15, std::bind(&youtube_manager::requestRefreshAuth, this), false);
 
 			if (mRefreshRecentSubs == timer_handle())
 			{
@@ -91,6 +91,19 @@ void gl::app::youtube_manager::draw(SDL_Renderer* renderer)
 {
 }
 
+void gl::app::youtube_manager::sendLiveChatMessage(const std::string& message)
+{
+	const broadcast* liveBroadcast = findLiveBroadcast();
+	if (liveBroadcast == nullptr)
+		return;
+
+	const auto insertLiveChatMessageRequest = yt::api::live::insertLiveChatMessageRequest(yt::secret::clientSecret)
+												  .setLiveChatId(liveBroadcast->liveChatId)
+												  .setMessageText(message);
+
+	std::future<std::string> mPostFuture = std::async(yt::api::post, insertLiveChatMessageRequest.url, mAuth.accessToken, insertLiveChatMessageRequest.json.dump());
+}
+
 void gl::app::youtube_manager::requestAuth()
 {
 	LOG(Display, "Requesting fresh auth");
@@ -106,7 +119,7 @@ void gl::app::youtube_manager::requestRefreshAuth()
 	}
 
 	LOG(Display, "Requesting refresh of auth");
-	mAuthFuture = std::async(yt::api::refreshAuth, yt::secret::clientId, yt::secret::clientSecret, auth.refreshToken);
+	mAuthFuture = std::async(yt::api::refreshAuth, yt::secret::clientId, yt::secret::clientSecret, mAuth.refreshToken);
 }
 
 void gl::app::youtube_manager::requestSubs()
@@ -120,7 +133,7 @@ void gl::app::youtube_manager::requestSubs()
 											.setMyRecentSubscribers(true)
 											.setMaxResults(3);
 
-	mRecentSubsFuture = std::async(yt::api::fetch, listSubscribersRequest.url, auth.accessToken, mSubsribersETag);
+	mRecentSubsFuture = std::async(yt::api::fetch, listSubscribersRequest.url, mAuth.accessToken, mSubsribersETag);
 }
 
 void gl::app::youtube_manager::processSubs()
@@ -181,7 +194,7 @@ void gl::app::youtube_manager::requestBroadcasts()
 											   .setBroadcastType("event")
 											   .setMaxResults(3);
 
-	mRefreshBroadcastsFuture = std::async(yt::api::fetch, listLiveBroadcastsRequest.url, auth.accessToken, mBroadcastsETag);
+	mRefreshBroadcastsFuture = std::async(yt::api::fetch, listLiveBroadcastsRequest.url, mAuth.accessToken, mBroadcastsETag);
 }
 
 void gl::app::youtube_manager::processBroadcasts()
@@ -241,17 +254,7 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 	if (!bAuthSuccess)
 		return;
 
-	const broadcast* liveBroadcast = nullptr;
-
-	std::for_each(mBroadcasts.begin(), mBroadcasts.end(), [&liveBroadcast](const broadcast& val)
-		{ 
-			if (liveBroadcast == nullptr)
-				liveBroadcast = &val;
-			else if (liveBroadcast->lifeCycleStatus == "ready" && (val.lifeCycleStatus == "testing" ||val.lifeCycleStatus == "live"))
-				liveBroadcast = &val;
-			else if (liveBroadcast->lifeCycleStatus == "testing" &&  val.lifeCycleStatus == "live" )
-				liveBroadcast = &val; });
-
+	const broadcast* liveBroadcast = findLiveBroadcast();
 	if (liveBroadcast == nullptr)
 		return;
 
@@ -262,7 +265,7 @@ void gl::app::youtube_manager::requestLiveChatMessages()
 											 .setLiveChatId(liveBroadcast->liveChatId)
 											 .setMaxResults(20);
 
-	mRefreshLiveChatFuture = std::async(yt::api::fetch, listLiveMessagesRequest.url, auth.accessToken, mLiveChatETag);
+	mRefreshLiveChatFuture = std::async(yt::api::fetch, listLiveMessagesRequest.url, mAuth.accessToken, mLiveChatETag);
 }
 
 void gl::app::youtube_manager::processLiveChatMessages()
@@ -325,4 +328,19 @@ void gl::app::youtube_manager::processLiveChatMessages()
 			}
 		}
 	}
+}
+
+const gl::app::youtube_manager::broadcast* gl::app::youtube_manager::findLiveBroadcast() const
+{
+	const broadcast* liveBroadcast = nullptr;
+	std::for_each(mBroadcasts.begin(), mBroadcasts.end(), [&liveBroadcast](const broadcast& val)
+		{ 
+			if (liveBroadcast == nullptr)
+				liveBroadcast = &val;
+			else if (liveBroadcast->lifeCycleStatus == "ready" && (val.lifeCycleStatus == "testing" ||val.lifeCycleStatus == "live"))
+				liveBroadcast = &val;
+			else if (liveBroadcast->lifeCycleStatus == "testing" &&  val.lifeCycleStatus == "live" )
+				liveBroadcast = &val; });
+
+	return liveBroadcast;
 }

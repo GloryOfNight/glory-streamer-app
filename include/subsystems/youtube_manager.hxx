@@ -55,6 +55,8 @@ namespace gl::app
 
 		const std::vector<live_chat_message>& getLiveChatMessages() const { return mLiveChat; };
 
+		void sendLiveChatMessage(const std::string& message);
+
 	private:
 		void requestAuth();
 		void requestRefreshAuth();
@@ -67,6 +69,8 @@ namespace gl::app
 
 		void requestLiveChatMessages();
 		void processLiveChatMessages();
+
+		const broadcast* findLiveBroadcast() const;
 
 		timer_handle mRefreshAuthTimer{};
 		std::future<std::pair<bool, yt::api::auth_info>> mAuthFuture;
@@ -89,7 +93,7 @@ namespace gl::app
 		std::string mLiveChatETag{};
 		std::string mLiveChatNextPageToken{};
 
-		yt::api::auth_info auth{};
+		yt::api::auth_info mAuth{};
 		bool bAuthSuccess{};
 	};
 } // namespace gl::app
