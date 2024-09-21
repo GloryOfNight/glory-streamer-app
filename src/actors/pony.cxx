@@ -32,8 +32,6 @@ void gl::app::pony::init()
 	mUpdateForwardPosTimer = timer_manager::get()->addTimer(6.0, std::bind(&pony::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
-	mSpriteComponent->setDstSize(113, 141);
-
 	const auto& ghostBox = getBox();
 	mX = ghostBox.w / 2;
 	mY = ghostBox.h / 2;

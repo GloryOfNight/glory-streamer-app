@@ -34,6 +34,8 @@ namespace gl::app
 
 		void sayHi();
 
+		void doFlipAnim();
+
 		void setMessage(const std::string& message);
 
 		void showMessage(bool bShow);

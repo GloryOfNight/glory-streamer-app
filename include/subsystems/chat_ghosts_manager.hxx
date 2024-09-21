@@ -24,6 +24,8 @@ namespace gl::app
 		void onTwitchChatterReceived(const std::string& userId, const std::string& userLogin, const std::string& userName);
 		void onTwitchMessageReceived(const std::string& userId, const std::string& userLogin, const std::string& userName, const std::string& message, const std::string messageId);
 
+		void parseCommandMessage(const std::string& fullMessage, std::string& command, std::string& realMessage);
+
 		class chat_ghost* findGhostByUserId(const std::string& userId);
 	};
 } // namespace gl::app

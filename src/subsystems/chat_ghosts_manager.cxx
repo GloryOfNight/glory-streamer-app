@@ -49,29 +49,44 @@ void gl::app::chat_ghost_subsystem::onLiveChatMessage(const std::string& channel
 	const auto& objects = engine::get()->getObjects();
 	auto ghost = findGhostByUserId(channelId);
 
-	const bool bSpawn = std::find(mSpawnGhostsCommands.begin(), mSpawnGhostsCommands.end(), displayMessage) != mSpawnGhostsCommands.end();
-	const bool bDespawn = std::find(mDespawnGhostsCommands.begin(), mDespawnGhostsCommands.end(), displayMessage) != mDespawnGhostsCommands.end();
-	const bool bSayHi = std::find(mSayHiCommands.begin(), mSayHiCommands.end(), displayMessage) != mSayHiCommands.end();
+	std::string command, realMessage;
+	parseCommandMessage(displayMessage, command, realMessage);
+
+	const bool bSpawn = std::find(mSpawnGhostsCommands.begin(), mSpawnGhostsCommands.end(), command) != mSpawnGhostsCommands.end();
+	const bool bDespawn = std::find(mDespawnGhostsCommands.begin(), mDespawnGhostsCommands.end(), command) != mDespawnGhostsCommands.end();
+	const bool bSayHi = std::find(mSayHiCommands.begin(), mSayHiCommands.end(), command) != mSayHiCommands.end();
+	const bool bFlip = command == "!flip";
 
 	if (bSpawn && !ghost)
 	{
 		auto newGhost = engine::get()->createObject<chat_ghost>(displayName, channelId);
 		newGhost->showYoutubeLogo();
 
+		newGhost->setMessage(realMessage);
+
 		ghost = newGhost;
 	}
 
 	if (bSayHi && ghost)
 	{
-		ghost->sayHi();
+		if (realMessage.empty())
+			ghost->sayHi();
+		else
+			ghost->setMessage(realMessage);
+
 		ghost->resetDeathTimer();
 
 		youtube_manager::get()->sendLiveChatMessage(std::format("Приветсвуем, @{}!", displayName));
 	}
 	else if (!bSpawn && ghost)
 	{
-		ghost->setMessage(displayMessage);
+		ghost->setMessage(realMessage);
 		ghost->resetDeathTimer();
+	}
+
+	if (bFlip && ghost)
+	{
+		ghost->doFlipAnim();
 	}
 
 	if (bDespawn && ghost)
@@ -100,21 +115,31 @@ void gl::app::chat_ghost_subsystem::onTwitchMessageReceived(const std::string& u
 	const auto& objects = engine::get()->getObjects();
 	auto ghost = findGhostByUserId(userId);
 
-	const bool bSpawn = std::find(mSpawnGhostsCommands.begin(), mSpawnGhostsCommands.end(), message) != mSpawnGhostsCommands.end();
-	const bool bDespawn = std::find(mDespawnGhostsCommands.begin(), mDespawnGhostsCommands.end(), message) != mDespawnGhostsCommands.end();
-	const bool bSayHi = std::find(mSayHiCommands.begin(), mSayHiCommands.end(), message) != mSayHiCommands.end();
+	std::string command, realMessage;
+	parseCommandMessage(message, command, realMessage);
+
+	const bool bSpawn = std::find(mSpawnGhostsCommands.begin(), mSpawnGhostsCommands.end(), command) != mSpawnGhostsCommands.end();
+	const bool bDespawn = std::find(mDespawnGhostsCommands.begin(), mDespawnGhostsCommands.end(), command) != mDespawnGhostsCommands.end();
+	const bool bSayHi = std::find(mSayHiCommands.begin(), mSayHiCommands.end(), command) != mSayHiCommands.end();
+	const bool bFlip = command == "!flip";
 
 	if (bSpawn && !ghost)
 	{
 		auto newGhost = engine::get()->createObject<chat_ghost>(userName, userId);
 		newGhost->showTwitchLogo();
 
+		newGhost->setMessage(realMessage);
+
 		ghost = newGhost;
 	}
 
 	if (bSayHi && ghost)
 	{
-		ghost->sayHi();
+		if (realMessage.empty())
+			ghost->sayHi();
+		else
+			ghost->setMessage(realMessage);
+
 		ghost->resetDeathTimer();
 
 		const std::vector<std::string> greetings = {"Привествуем!", "Добро пожаловать!", "Здравствуй!", "Какая встреча!", "Привет!"};
@@ -127,9 +152,40 @@ void gl::app::chat_ghost_subsystem::onTwitchMessageReceived(const std::string& u
 		ghost->resetDeathTimer();
 	}
 
+	if (bFlip && ghost)
+	{
+		ghost->doFlipAnim();
+	}
+
 	if (bDespawn && ghost)
 	{
 		ghost->destroy();
+	}
+}
+
+void gl::app::chat_ghost_subsystem::parseCommandMessage(const std::string& fullMessage, std::string& command, std::string& realMessage)
+{
+	if (fullMessage.empty())
+		return;
+
+	if (fullMessage.size() > 1 && fullMessage[0] == '!')
+	{
+		const auto spacePos = fullMessage.find(' ');
+		if (spacePos != std::string::npos)
+		{
+			command = fullMessage.substr(0, spacePos);
+			realMessage = fullMessage.substr(spacePos + 1);
+		}
+		else
+		{
+			command = fullMessage;
+			realMessage = "";
+		}
+	}
+	else
+	{
+		command = "";
+		realMessage = fullMessage;
 	}
 }
 

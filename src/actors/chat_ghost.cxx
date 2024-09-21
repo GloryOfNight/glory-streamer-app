@@ -75,7 +75,7 @@ void gl::app::chat_ghost::init()
 	mUpdateForwardPosTimer = timer_manager::get()->addTimer(6.0, std::bind(&chat_ghost::generateNewForwardPos, this), true);
 	generateNewForwardPos();
 
-	mDeathTimer = timer_manager::get()->addTimer(300.0, std::bind(&chat_ghost::destroy, this), false);
+	mDeathTimer = timer_manager::get()->addTimer(5400.0, std::bind(&chat_ghost::destroy, this), false);
 
 	mX = randPosX(gen);
 	mY = randPosY(gen);
@@ -167,14 +167,13 @@ void gl::app::chat_ghost::sayHi()
 	setMessage(greetings[std::rand() % greetings.size()]);
 }
 
+void gl::app::chat_ghost::doFlipAnim()
+{
+	mSpriteComponent->setNextAnimation("flip");
+}
+
 void gl::app::chat_ghost::setMessage(const std::string& message)
 {
-	if (message == "!flip")
-	{
-		mSpriteComponent->setNextAnimation("flip");
-		return;
-	}
-
 	mGhostMessageFontComponent->setText(message);
 	mGhostMessageFontComponent->setVisible(true);
 
@@ -183,9 +182,7 @@ void gl::app::chat_ghost::setMessage(const std::string& message)
 	timerManager->clearTimer(mHideMessageTimer);
 	resetDeathTimer();
 
-	mHideMessageTimer = timerManager->addTimer(12.0, std::bind(&chat_ghost::showMessage, this, false), false);
-
-	mSpriteComponent->setNextAnimation("talk");
+	mHideMessageTimer = timerManager->addTimer(18.0, std::bind(&chat_ghost::showMessage, this, false), false);
 }
 
 void gl::app::chat_ghost::showMessage(bool bShow)
