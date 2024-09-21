@@ -30,7 +30,7 @@ namespace gl::app
 
 		void shutdown();
 
-		SDL_Texture* LoadTexture(const std::string& texturePath);
+		SDL_Texture* loadTexture(const std::string& texturePath);
 
 		template <typename T, typename... Args>
 		T* createObject(Args&&... args)

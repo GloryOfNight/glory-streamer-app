@@ -175,7 +175,7 @@ void gl::app::engine::shutdown()
 	gEngine = nullptr;
 }
 
-SDL_Texture* gl::app::engine::LoadTexture(const std::string& texturePath)
+SDL_Texture* gl::app::engine::loadTexture(const std::string& texturePath)
 {
 	if (mTextures.contains(texturePath))
 	{
@@ -317,7 +317,6 @@ void gl::app::engine::showObjectInspector()
 	for (auto& object : mObjects)
 	{
 		auto ghost = dynamic_cast<chat_ghost*>(object.get());
-
 		if (ghost)
 		{
 			const auto channelId = ghost->getUserId();
@@ -366,6 +365,33 @@ void gl::app::engine::showObjectInspector()
 			if (ImGui::Button((std::string("Set Youtube##") + channelId).c_str()))
 			{
 				ghost->showYoutubeLogo();
+			}
+
+			ImGui::Separator();
+		}
+
+		auto ponyChar = dynamic_cast<pony*>(object.get());
+		if (ponyChar)
+		{
+			const auto& userId = ponyChar->getUserId();
+
+			double x, y;
+			ponyChar->getPos(&x, &y);
+
+			float pos[2] = {static_cast<float>(x), static_cast<float>(y)};
+			ImGui::InputFloat2((std::string("Position##") + userId).c_str(), pos, "%.1f");
+
+			ponyChar->setPos(pos[0], pos[1]);
+
+			bool bHide = ponyChar->getVisible();
+			ImGui::Checkbox((std::string("Hide##") + userId).c_str(), &bHide);
+			ponyChar->setVisible(bHide);
+
+			ImGui::SameLine();
+
+			if (ImGui::Button((std::string("Remove##") + userId).c_str()))
+			{
+				removeObject(ponyChar);
 			}
 
 			ImGui::Separator();

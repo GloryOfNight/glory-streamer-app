@@ -9,7 +9,7 @@ gl::app::sprite_component::sprite_component(const std::string& spriteSheetAssetJ
 	if (spriteSheetPtr)
 		mSpriteSheet = *spriteSheetPtr;
 
-	mTexture = engine::get()->LoadTexture(mSpriteSheet.resourcePath);
+	mTexture = engine::get()->loadTexture(mSpriteSheet.resourcePath);
 
 	SDL_QueryTexture(mTexture, NULL, NULL, &mWidth, &mHeight);
 

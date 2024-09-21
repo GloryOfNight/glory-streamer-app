@@ -25,6 +25,10 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
+		const std::string& getUserId() const { return mUserId; }
+
+		const std::string& getUserName() const { return mUserName; }
+
 	private:
 		void generateNewForwardPos();
 
