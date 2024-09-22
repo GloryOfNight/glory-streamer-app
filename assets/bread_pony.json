@@ -4,8 +4,8 @@
   "name": "bread the pony",
   "resourcePath": "assets/sprites/bread/bread_fly.png",
   "size": {
-    "w": 160,
-    "h": 200
+    "w": 80,
+    "h": 100
   },
   "offset": {
     "x": 0,

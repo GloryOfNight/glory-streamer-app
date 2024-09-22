@@ -9,7 +9,7 @@
 
 static std::vector<std::string> mSpawnGhostsCommands = {"!show", "!spawnghost", "!ghost", "!hi", "!sayhi"};
 static std::vector<std::string> mDespawnGhostsCommands = {"!hide"};
-static std::vector<std::string> mSayHiCommands = {"!hi", "!sayhi"};
+static std::vector<std::string> mSayHiCommands = {"!hi", "!sayhi", "!hello"};
 
 static gl::app::chat_ghost_subsystem* gChatGhostSubsystem = nullptr;
 
@@ -52,10 +52,11 @@ void gl::app::chat_ghost_subsystem::onLiveChatMessage(const std::string& channel
 	std::string command, realMessage;
 	parseCommandMessage(displayMessage, command, realMessage);
 
-	const bool bSpawn = std::find(mSpawnGhostsCommands.begin(), mSpawnGhostsCommands.end(), command) != mSpawnGhostsCommands.end();
 	const bool bDespawn = std::find(mDespawnGhostsCommands.begin(), mDespawnGhostsCommands.end(), command) != mDespawnGhostsCommands.end();
 	const bool bSayHi = std::find(mSayHiCommands.begin(), mSayHiCommands.end(), command) != mSayHiCommands.end();
 	const bool bFlip = command == "!flip";
+
+	const bool bSpawn = bSayHi || bFlip || std::find(mSpawnGhostsCommands.begin(), mSpawnGhostsCommands.end(), command) != mSpawnGhostsCommands.end();
 
 	if (bSpawn && !ghost)
 	{
@@ -118,10 +119,11 @@ void gl::app::chat_ghost_subsystem::onTwitchMessageReceived(const std::string& u
 	std::string command, realMessage;
 	parseCommandMessage(message, command, realMessage);
 
-	const bool bSpawn = std::find(mSpawnGhostsCommands.begin(), mSpawnGhostsCommands.end(), command) != mSpawnGhostsCommands.end();
 	const bool bDespawn = std::find(mDespawnGhostsCommands.begin(), mDespawnGhostsCommands.end(), command) != mDespawnGhostsCommands.end();
 	const bool bSayHi = std::find(mSayHiCommands.begin(), mSayHiCommands.end(), command) != mSayHiCommands.end();
 	const bool bFlip = command == "!flip";
+
+	const bool bSpawn = bSayHi || bFlip || std::find(mSpawnGhostsCommands.begin(), mSpawnGhostsCommands.end(), command) != mSpawnGhostsCommands.end();
 
 	if (bSpawn && !ghost)
 	{
@@ -148,7 +150,7 @@ void gl::app::chat_ghost_subsystem::onTwitchMessageReceived(const std::string& u
 	}
 	else if (!bSpawn && ghost)
 	{
-		ghost->setMessage(message);
+		ghost->setMessage(realMessage);
 		ghost->resetDeathTimer();
 	}
 

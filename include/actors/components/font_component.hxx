@@ -20,6 +20,8 @@ namespace gl::app
 
 		const SDL_Rect& getDstRect() const { return mDstRect; }
 
+		int32_t getSize() const { return mFont ? TTF_FontHeight(mFont) : 0; }
+
 		void setWrapping(uint16_t wrapping);
 
 	private:

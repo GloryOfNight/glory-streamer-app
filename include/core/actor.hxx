@@ -19,6 +19,8 @@ namespace gl::app
 		virtual void update(double delta);
 		virtual void draw(SDL_Renderer* renderer) const;
 
+		virtual void destroy();
+
 		void setPos(double x, double y);
 		void setPosX(double x);
 		void setPosY(double y);

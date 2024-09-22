@@ -190,11 +190,6 @@ void gl::app::chat_ghost::showMessage(bool bShow)
 	mGhostMessageFontComponent->setVisible(bShow);
 }
 
-void gl::app::chat_ghost::destroy()
-{
-	engine::get()->removeObject(this);
-}
-
 void gl::app::chat_ghost::showYoutubeLogo()
 {
 	mPlatformLogoSprite->setNextAnimation("youtube");

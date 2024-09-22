@@ -40,8 +40,6 @@ namespace gl::app
 
 		void showMessage(bool bShow);
 
-		void destroy();
-
 		void showYoutubeLogo();
 
 		void showTwitchLogo();

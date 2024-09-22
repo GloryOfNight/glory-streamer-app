@@ -1,5 +1,7 @@
 #include "core/actor.hxx"
 
+#include "core/engine.hxx"
+
 void gl::app::actor::init()
 {
 	object::init();
@@ -23,6 +25,11 @@ void gl::app::actor::draw(SDL_Renderer* renderer) const
 		if (comp->getVisible())
 			comp->draw(renderer);
 	}
+}
+
+void gl::app::actor::destroy()
+{
+	engine::get()->removeObject(this);
 }
 
 void gl::app::actor::setPos(double x, double y)

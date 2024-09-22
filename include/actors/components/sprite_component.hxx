@@ -20,6 +20,7 @@ namespace gl::app
 		void draw(SDL_Renderer* renderer) override;
 
 		const SDL_Rect& getSrcRect() const { return mSrcRect; }
+		const SDL_Rect& getDstRect() const { return mDstRect; }
 
 		void setFlipHorizontal(bool flip);
 

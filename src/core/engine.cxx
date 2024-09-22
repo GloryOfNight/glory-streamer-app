@@ -38,18 +38,20 @@ gl::app::engine::~engine()
 
 bool gl::app::engine::init()
 {
-	if (SDL_CreateWindowAndRenderer(2560, 1440, SDL_WINDOW_MINIMIZED, &mWindow, &mRenderer))
+	SDL_WindowFlags WindowFlags = (SDL_WindowFlags)(SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_SHOWN);
+
+	if (SDL_CreateWindowAndRenderer(2560, 1440, WindowFlags, &mWindow, &mRenderer))
 	{
 		std::cerr << "SDL_CreateWindowAndRenderer failed with: " << SDL_GetError() << std::endl;
 		return false;
 	}
 
-	SDL_SetWindowTitle(mWindow, "Glory streamer app");
+	SDL_SetWindowTitle(mWindow, "Glorius Stream App");
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	auto newFont = io.Fonts->AddFontFromFileTTF("assets/fonts/Arsenal-Regular.ttf", 16, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 
@@ -386,6 +388,11 @@ void gl::app::engine::showObjectInspector()
 			bool bHide = ponyChar->getVisible();
 			ImGui::Checkbox((std::string("Hide##") + userId).c_str(), &bHide);
 			ponyChar->setVisible(bHide);
+
+			float scale = ponyChar->getScale();
+			ImGui::SliderFloat((std::string("Scale##") + userId).c_str(), &scale, 0.01f, 10.0f);
+
+			ponyChar->setScale(scale);
 
 			ImGui::SameLine();
 

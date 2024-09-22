@@ -46,7 +46,7 @@
     {
       "name": "flip",
       "next": "idle",
-      "repeats": 1,
+      "repeats": 5,
       "allowInterrupt": false,
       "frames": [
         {
