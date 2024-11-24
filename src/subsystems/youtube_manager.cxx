@@ -3,18 +3,13 @@
 #include "actors/chat_ghost.hxx"
 #include "core/engine.hxx"
 #include "core/log.hxx"
+#include "secrets/youtube-secret.h"
 
 #include <format>
 #include <future>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <string>
-
-#if __has_include("secrets/youtube-secret.h")
-#include "secrets/youtube-secret.h"
-#else
-#include "secrets/youtube-secret-template.h"
-#endif
 
 static gl::app::youtube_manager* gYoutubeManager = nullptr;
 
