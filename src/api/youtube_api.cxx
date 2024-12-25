@@ -73,7 +73,8 @@ std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string client
 
 			auth.accessToken = jsonAuth["access_token"];
 			auth.expiresIn = jsonAuth["expires_in"];
-			auth.refreshToken = jsonAuth["refresh_token"];
+			if (jsonAuth.contains("refresh_token"))
+				auth.refreshToken = jsonAuth["refresh_token"];
 			auth.scope = jsonAuth["scope"];
 			auth.tokenType = jsonAuth["token_type"];
 
