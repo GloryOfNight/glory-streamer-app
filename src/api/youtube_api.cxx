@@ -15,11 +15,9 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
 
 std::string exchangeAuthCodeForAccessToken(const std::string& clientId, const std::string& clientSecret, const std::string& authCode, const std::string& redirectUri)
 {
-	CURL* curl;
-	CURLcode res;
 	std::string readBuffer;
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		std::string tokenUrl = "https://oauth2.googleapis.com/token";
@@ -30,7 +28,7 @@ std::string exchangeAuthCodeForAccessToken(const std::string& clientId, const st
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 		if (res != CURLE_OK)
 		{
 			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
@@ -93,13 +91,10 @@ std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string client
 
 std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string clientId, const std::string clientSecret, const std::string refreshToken)
 {
-	CURL* curl;
-	CURLcode res;
-
 	bool bSuccess = false;
 	auth_info auth{};
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		const std::string url = std::format("https://oauth2.googleapis.com/token");
@@ -112,7 +107,7 @@ std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string clien
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 
 		if (res != CURLE_OK)
 		{
@@ -147,12 +142,10 @@ std::pair<bool, yt::api::auth_info> yt::api::refreshAuth(const std::string clien
 
 std::string yt::api::fetch(const std::string url, const std::string accessToken, const std::string eTag)
 {
-	CURL* curl;
-	CURLcode res;
 	std::string headerBuffer;
 	std::string responseBuffer;
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		// Set the URL
@@ -174,7 +167,7 @@ std::string yt::api::fetch(const std::string url, const std::string accessToken,
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
 
 		// Perform the request
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 
 		// Check for errors
 		if (res != CURLE_OK)
@@ -192,12 +185,10 @@ std::string yt::api::fetch(const std::string url, const std::string accessToken,
 
 std::string yt::api::post(const std::string url, const std::string accessToken, const std::string postJson)
 {
-	CURL* curl;
-	CURLcode res;
 	std::string headerBuffer;
 	std::string responseBuffer;
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		// Set the URL
@@ -219,7 +210,7 @@ std::string yt::api::post(const std::string url, const std::string accessToken, 
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
 
 		// Perform the request
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 
 		// Check for errors
 		if (res != CURLE_OK)

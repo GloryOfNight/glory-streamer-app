@@ -17,11 +17,9 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
 
 std::string exchangeTwitchAuthCodeForAccessToken(const std::string& clientId, const std::string& clientSecret, const std::string& authCode, const std::string& redirectUri)
 {
-	CURL* curl;
-	CURLcode res;
 	std::string readBuffer;
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		const std::string tokenUrl = "https://id.twitch.tv/oauth2/token";
@@ -37,7 +35,7 @@ std::string exchangeTwitchAuthCodeForAccessToken(const std::string& clientId, co
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 		if (res != CURLE_OK)
 		{
 			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
@@ -117,15 +115,12 @@ std::pair<bool, ttv::api::auth_info> ttv::api::initialAuth(const std::string cli
 
 std::pair<bool, ttv::api::auth_info> ttv::api::refreshAuth(const std::string clientId, const std::string clientSecret, const std::string refreshToken)
 {
-	CURL* curl;
-	CURLcode res;
-
 	bool bSuccess = false;
 	auth_info auth{};
 
 	std::string responseBuffer;
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		const std::string tokenUrl = "https://id.twitch.tv/oauth2/token";
@@ -139,7 +134,7 @@ std::pair<bool, ttv::api::auth_info> ttv::api::refreshAuth(const std::string cli
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
 
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 		if (res != CURLE_OK)
 		{
 			std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
@@ -165,12 +160,10 @@ std::pair<bool, ttv::api::auth_info> ttv::api::refreshAuth(const std::string cli
 
 std::string ttv::api::fetch(const std::string url, const std::string accessToken, const std::string clientId)
 {
-	CURL* curl;
-	CURLcode res;
 	std::string headerBuffer;
 	std::string responseBuffer;
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		// Set the URL
@@ -193,7 +186,7 @@ std::string ttv::api::fetch(const std::string url, const std::string accessToken
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
 
 		// Perform the request
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 
 		// Check for errors
 		if (res != CURLE_OK)
@@ -211,12 +204,10 @@ std::string ttv::api::fetch(const std::string url, const std::string accessToken
 
 std::string ttv::api::post(const std::string url, const std::string accessToken, const std::string clientId, const std::string postJson)
 {
-	CURL* curl;
-	CURLcode res;
 	std::string headerBuffer;
 	std::string responseBuffer;
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		// Set the URL
@@ -239,7 +230,7 @@ std::string ttv::api::post(const std::string url, const std::string accessToken,
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
 
 		// Perform the request
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 
 		// Check for errors
 		if (res != CURLE_OK)
@@ -262,18 +253,15 @@ ttv::api::eventSubClient::~eventSubClient()
 
 bool ttv::api::eventSubClient::connect()
 {
-	CURL* curl;
-	CURLcode res;
-
 	std::string responseBuffer;
 
-	curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 	if (curl)
 	{
 		curl_easy_setopt(curl, CURLOPT_URL, "wss://eventsub.wss.twitch.tv/ws");
 		curl_easy_setopt(curl, CURLOPT_CONNECT_ONLY, 2L);
 
-		res = curl_easy_perform(curl);
+		const CURLcode res = curl_easy_perform(curl);
 		if (res == CURLE_OK)
 		{
 			mCurl = curl;
