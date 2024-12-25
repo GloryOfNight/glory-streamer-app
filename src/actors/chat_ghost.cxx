@@ -51,7 +51,6 @@ gl::app::chat_ghost::chat_ghost(const std::string& subTitle, const std::string& 
 
 gl::app::chat_ghost::~chat_ghost()
 {
-	auto eng = engine::get();
 	auto timerManager = timer_manager::get();
 	if (timerManager)
 	{

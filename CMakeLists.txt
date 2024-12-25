@@ -44,12 +44,19 @@ target_include_directories(${PROJECT_NAME}-static PRIVATE src)
 add_executable(${PROJECT_NAME} "src/main.cxx")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}-static)
 
-
 enable_sanitizers(${PROJECT_NAME} 
                     ${ENABLE_SANITIZER_ADDRESS} 
                     ${ENABLE_SANITIZER_LEAK} 
                     ${ENABLE_SANITIZER_UNDEFINED} 
                     ${ENABLE_SANITIZER_THREAD} 
                     ${ENABLE_SANITIZER_MEMORY})
+
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+
+if(CLANG_TIDY_EXE)
+        set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}")
+        set_target_properties(${PROJECT_NAME}-static PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+endif()
+                    
 
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-static)

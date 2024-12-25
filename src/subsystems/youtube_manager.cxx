@@ -285,11 +285,10 @@ void gl::app::youtube_manager::processLiveChatMessages()
 		else
 		{
 			mLiveChatNextPageToken = liveMessagesResponseJson["nextPageToken"];
-			uint32_t pollingMs = liveMessagesResponseJson["pollingIntervalMillis"];
-
 			mLiveChatETag = liveMessagesResponseJson["etag"];
 
 			// saving quota
+			//uint32_t pollingMs = liveMessagesResponseJson["pollingIntervalMillis"];
 			//auto timerManager = engine::get()->getTimerManager();
 			//timerManager->clearTimer(mRefreshLiveChat);
 			//mRefreshLiveChat = timerManager->addTimer((pollingMs + 100) / 1000.0, std::bind(&youtube_manager::requestLiveChatMessages, this), true);

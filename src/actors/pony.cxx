@@ -31,7 +31,6 @@ gl::app::pony::pony(const std::string& userName, const std::string& userId)
 
 gl::app::pony::~pony()
 {
-	auto eng = engine::get();
 	auto timerManager = timer_manager::get();
 	if (timerManager)
 	{

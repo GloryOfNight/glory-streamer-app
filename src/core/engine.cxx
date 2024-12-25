@@ -279,7 +279,7 @@ void gl::app::engine::showObjectInspector()
 
 	if (ImGui::Button("Spawn bread"))
 	{
-		auto newBread = createObject<pony>("GloryOfNight", std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+		createObject<pony>("GloryOfNight", std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
 	}
 
 	if (ImGui::Button("Spawn ghost"))
