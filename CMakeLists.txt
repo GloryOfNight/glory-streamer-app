@@ -51,4 +51,11 @@ enable_sanitizers(${PROJECT_NAME}
                     ${ENABLE_SANITIZER_THREAD} 
                     ${ENABLE_SANITIZER_MEMORY})
 
+find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+if(CLANG_TIDY_EXE)
+        # SDL3/SDL_stdinc.h:4276 being wierd
+        target_compile_definitions(${PROJECT_NAME}-static PRIVATE SDL_DISABLE_ANALYZE_MACROS)
+        set_target_properties(${PROJECT_NAME}-static PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-p=${CMAKE_BINARY_DIR}")
+endif()
+
 install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}-static)
