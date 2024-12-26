@@ -2,7 +2,7 @@
 
 #include "core/actor_component.hxx"
 
-#include <SDL_ttf.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <string>
 
 namespace gl::app
@@ -18,9 +18,9 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		const SDL_Rect& getDstRect() const { return mDstRect; }
+		const SDL_FRect& getDstRect() const { return mDstRect; }
 
-		int32_t getSize() const { return mFont ? TTF_FontHeight(mFont) : 0; }
+		float getSize() const { return mFont ? TTF_GetFontSize(mFont) : 0.f; }
 
 		void setWrapping(uint16_t wrapping);
 
@@ -30,7 +30,7 @@ namespace gl::app
 		SDL_Texture* mTexture{}; // owning!
 
 		std::string mText{};
-		SDL_Rect mDstRect{};
+		SDL_FRect mDstRect{};
 
 		uint16_t mWrapping{120};
 

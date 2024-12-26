@@ -42,10 +42,10 @@ void gl::app::font_component::draw(SDL_Renderer* renderer)
 		}
 
 		TTF_SetFontOutline(mFont, mOutlineSize);
-		SDL_Surface* textOutlineSurf = TTF_RenderUTF8_Blended_Wrapped(mFont, mText.c_str(), {0, 0, 0}, mWrapping);
+		SDL_Surface* textOutlineSurf = TTF_RenderText_Blended_Wrapped(mFont, mText.c_str(), 0, {0, 0, 0}, mWrapping);
 
 		TTF_SetFontOutline(mFont, 0);
-		SDL_Surface* textSurf = TTF_RenderUTF8_Blended_Wrapped(mFont, mText.c_str(), {255, 255, 255}, mWrapping);
+		SDL_Surface* textSurf = TTF_RenderText_Blended_Wrapped(mFont, mText.c_str(), 0, {255, 255, 255}, mWrapping);
 
 		SDL_Rect rect = {mOutlineSize, mOutlineSize, textSurf->w, textSurf->h};
 
@@ -57,8 +57,8 @@ void gl::app::font_component::draw(SDL_Renderer* renderer)
 		mDstRect.w = textSurf->w;
 		mDstRect.h = textSurf->h;
 
-		SDL_FreeSurface(textOutlineSurf);
-		SDL_FreeSurface(textSurf);
+		SDL_DestroySurface(textOutlineSurf);
+		SDL_DestroySurface(textSurf);
 		bDirty = false;
 	}
 
@@ -68,7 +68,7 @@ void gl::app::font_component::draw(SDL_Renderer* renderer)
 	mDstRect.x -= mDstRect.w / 2;
 	//mDstRect.y -= mDstRect.h / 2;
 
-	SDL_RenderCopy(renderer, mTexture, nullptr, &mDstRect);
+	SDL_RenderTexture(renderer, mTexture, nullptr, &mDstRect);
 }
 
 void gl::app::font_component::setWrapping(uint16_t wrapping)

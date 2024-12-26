@@ -9,14 +9,14 @@
 #include "subsystems/twitch_manager.hxx"
 #include "subsystems/youtube_manager.hxx"
 
-#include <SDL2/SDL_syswm.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL_system.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <algorithm>
 #include <format>
 #include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
 #include <iostream>
 #include <stdexcept>
 #include <thread>
@@ -38,15 +38,11 @@ gl::app::engine::~engine()
 
 bool gl::app::engine::init()
 {
-	SDL_WindowFlags WindowFlags = (SDL_WindowFlags)(SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_SHOWN);
-
-	if (SDL_CreateWindowAndRenderer(2560, 1440, WindowFlags, &mWindow, &mRenderer))
+	if (!SDL_CreateWindowAndRenderer("Glorious App", 2560, 1440, SDL_WINDOW_BORDERLESS | SDL_WINDOW_TRANSPARENT, &mWindow, &mRenderer))
 	{
 		std::cerr << "SDL_CreateWindowAndRenderer failed with: " << SDL_GetError() << std::endl;
 		return false;
 	}
-
-	SDL_SetWindowTitle(mWindow, "Glorius Stream App");
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -57,8 +53,8 @@ bool gl::app::engine::init()
 
 	ImGui::StyleColorsDark();
 
-	ImGui_ImplSDL2_InitForSDLRenderer(mWindow, mRenderer);
-	ImGui_ImplSDLRenderer2_Init(mRenderer);
+	ImGui_ImplSDL3_InitForSDLRenderer(mWindow, mRenderer);
+	ImGui_ImplSDLRenderer3_Init(mRenderer);
 
 	gEngine = this;
 
@@ -128,8 +124,8 @@ void gl::app::engine::run()
 			object->update(deltaSeconds);
 		}
 
-		ImGui_ImplSDLRenderer2_NewFrame();
-		ImGui_ImplSDL2_NewFrame();
+		ImGui_ImplSDLRenderer3_NewFrame();
+		ImGui_ImplSDL3_NewFrame();
 		ImGui::NewFrame();
 
 		if (bShowObjectInspector)
@@ -151,7 +147,7 @@ void gl::app::engine::run()
 			object->draw(mRenderer);
 		}
 
-		ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), mRenderer);
+		ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), mRenderer);
 
 		SDL_RenderPresent(mRenderer);
 	}
@@ -236,20 +232,20 @@ void gl::app::engine::pollEvents()
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-		ImGui_ImplSDL2_ProcessEvent(&event);
+		ImGui_ImplSDL3_ProcessEvent(&event);
 		switch (event.type)
 		{
-		case SDL_KEYUP:
-			if (event.key.keysym.sym == SDLK_0 && !bShowObjectInspector)
+		case SDL_EVENT_KEY_UP:
+			if (event.key.key == SDLK_0 && !bShowObjectInspector)
 			{
 				bShowObjectInspector = true;
 			}
-			else if (event.key.keysym.sym == SDLK_9 && !bShowYoutubeManagerInspector)
+			else if (event.key.key == SDLK_9 && !bShowYoutubeManagerInspector)
 			{
 				bShowYoutubeManagerInspector = true;
 			}
 			break;
-		case SDL_QUIT:
+		case SDL_EVENT_QUIT:
 			mRunning = false;
 			break;
 		}
