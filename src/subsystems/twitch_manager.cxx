@@ -2,7 +2,12 @@
 
 #include "api/twitch_api.hxx"
 #include "core/log.hxx"
+
+#if __has_include("secrets/twitch-secret.h")
 #include "secrets/twitch-secret.h"
+#else
+#include "secrets/twitch-secret-template.h"
+#endif
 
 #include <nlohmann/json.hpp>
 
