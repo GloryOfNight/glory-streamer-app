@@ -1,7 +1,9 @@
 #include "api/youtube_api.hxx"
 
 #include <curl/curl.h>
+#include <filesystem>
 #include <format>
+#include <fstream>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 
@@ -42,6 +44,31 @@ std::string exchangeAuthCodeForAccessToken(const std::string& clientId, const st
 
 std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string clientId, const std::string clientSecret)
 {
+	const std::filesystem::path cacheFilePath = std::filesystem::temp_directory_path() / std::filesystem::path("glory-app-cache/google.json");
+	const std::string cacheFilePathStr = cacheFilePath.generic_string();
+	std::fstream cacheStream{};
+
+	std::filesystem::create_directory(std::filesystem::temp_directory_path() / std::filesystem::path("glory-app-cache"));
+
+	cacheStream.open(cacheFilePathStr, std::ios::in);
+	if (cacheStream.is_open())
+	{
+		nlohmann::json cacheJson{};
+		cacheStream >> cacheJson;
+
+		cacheStream.close();
+
+		const std::string refreshToken = cacheJson.contains("refresh_token") ? cacheJson["refresh_token"].template get<std::string>() : std::string();
+		if (!refreshToken.empty())
+		{
+			const auto refreshRes = refreshAuth(clientId, clientSecret, refreshToken);
+			if (refreshRes.first) // bSuccess
+			{
+				return std::move(refreshRes);
+			}
+		}
+	}
+
 	bool bSuccess = false;
 	auth_info auth{};
 
@@ -86,6 +113,18 @@ std::pair<bool, yt::api::auth_info> yt::api::initalAuth(const std::string client
 
 	localServer.Get("/oauth2callback", callbackLam);
 	localServer.listen("localhost", 8080);
+
+	if (bSuccess && !auth.refreshToken.empty())
+	{
+		cacheStream.open(cacheFilePathStr, std::ios::out | std::ios::trunc);
+
+		nlohmann::json cacheJson{};
+		cacheJson["refresh_token"] = auth.refreshToken;
+
+		cacheStream << cacheJson.dump();
+
+		cacheStream.close();
+	}
 
 	return std::pair<bool, auth_info>{bSuccess, auth};
 }
