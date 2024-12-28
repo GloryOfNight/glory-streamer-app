@@ -19,8 +19,8 @@ namespace gl::app
 		void update(double delta) override;
 		void draw(SDL_Renderer* renderer) override;
 
-		const SDL_Rect& getSrcRect() const { return mSrcRect; }
-		const SDL_Rect& getDstRect() const { return mDstRect; }
+		const SDL_FRect& getSrcRect() const { return mSrcRect; }
+		const SDL_FRect& getDstRect() const { return mDstRect; }
 
 		void setFlipHorizontal(bool flip);
 
@@ -34,10 +34,10 @@ namespace gl::app
 		assets::sprite_sheet mSpriteSheet{};
 
 		SDL_Texture* mTexture{};
-		int32_t mWidth{}, mHeight{};
+		float mWidth{}, mHeight{};
 
-		SDL_Rect mSrcRect{};
-		SDL_Rect mDstRect{};
+		SDL_FRect mSrcRect{};
+		SDL_FRect mDstRect{};
 
 		double mAngle{0.0};
 

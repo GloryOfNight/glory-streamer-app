@@ -3,7 +3,12 @@
 #include "actors/chat_ghost.hxx"
 #include "core/engine.hxx"
 #include "core/log.hxx"
+
+#if __has_include("secrets/youtube-secret.h")
 #include "secrets/youtube-secret.h"
+#else
+#include "secrets/youtube-secret-template.h"
+#endif
 
 #include <format>
 #include <future>

@@ -7,10 +7,6 @@
       "installDir": "${sourceDir}/install",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "BUILD_CURL_EXE": false,
-        "BUILD_SHARED_LIBS": false,
-        "BUILD_STATIC_LIBS": true,
-        "BUILD_STATIC_CURL": true
       }
     },
     {

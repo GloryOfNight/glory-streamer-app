@@ -2,24 +2,23 @@
 
 #include "core/engine.hxx"
 
-#include <SDL2/SDL.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include <curl/curl.h>
 #include <iostream>
 #include <thread>
 
 int main(int argc, char* argv[])
 {
-	SDL_SetMainReady();
-	if (SDL_Init(SDL_INIT_VIDEO))
+	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
 		std::cerr << "Failed to initialize SDL" << SDL_GetError() << std::endl;
 		return -1;
 	}
 
-	if (TTF_Init())
+	if (!TTF_Init())
 	{
-		std::cerr << "Failed to initialize TTF" << TTF_GetError() << std::endl;
+		std::cerr << "Failed to initialize TTF" << SDL_GetError() << std::endl;
 		return -1;
 	}
 

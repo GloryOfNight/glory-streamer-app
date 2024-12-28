@@ -11,7 +11,7 @@ gl::app::sprite_component::sprite_component(const std::string& spriteSheetAssetJ
 
 	mTexture = engine::get()->loadTexture(mSpriteSheet.resourcePath);
 
-	SDL_QueryTexture(mTexture, NULL, NULL, &mWidth, &mHeight);
+	SDL_GetTextureSize(mTexture, &mWidth, &mHeight);
 
 	setSrcSize(mSpriteSheet.size.w, mSpriteSheet.size.h);
 	setDstSize(mSpriteSheet.size.w, mSpriteSheet.size.h);
@@ -36,8 +36,8 @@ void gl::app::sprite_component::update(double delta)
 {
 	const auto setFrameImageLam = [this](const assets::sprite_sheet::animation::frame& frame)
 	{
-		const uint16_t rows = mHeight / mSrcRect.h;
-		const uint16_t cols = mWidth / mSrcRect.w;
+		const uint16_t rows = static_cast<uint16_t>(mHeight / mSrcRect.h);
+		const uint16_t cols = static_cast<uint16_t>(mWidth / mSrcRect.w);
 
 		mSrcRect.x = (frame.index % cols) * mSrcRect.w;
 		mSrcRect.y = (frame.index / cols) * mSrcRect.h;
@@ -98,7 +98,7 @@ void gl::app::sprite_component::draw(SDL_Renderer* renderer)
 {
 	if (mTexture)
 	{
-		SDL_RendererFlip Flip{};
+		SDL_FlipMode Flip{};
 		if (bFlipHorizontal)
 			Flip = SDL_FLIP_HORIZONTAL;
 
@@ -110,8 +110,8 @@ void gl::app::sprite_component::draw(SDL_Renderer* renderer)
 
 		SDL_SetTextureColorMod(mTexture, mColorModeR, mColorModeG, mColorModeB);
 
-		SDL_Point center = {mDstRect.w / 2, mDstRect.h / 2};
-		SDL_RenderCopyEx(renderer, mTexture, &mSrcRect, &mDstRect, mAngle, &center, Flip);
+		SDL_FPoint center = {mDstRect.w / 2, mDstRect.h / 2};
+		SDL_RenderTextureRotated(renderer, mTexture, &mSrcRect, &mDstRect, mAngle, &center, Flip);
 	}
 }
 
